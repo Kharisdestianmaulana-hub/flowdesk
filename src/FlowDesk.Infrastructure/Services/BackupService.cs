@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using FlowDesk.Infrastructure.Data;
 
@@ -96,5 +97,52 @@ public class BackupService
     public string GetBackupFolder()
     {
         return Path.Join(_dataFolder, "backups");
+    }
+
+    public void ExportWorkspaceToZip(string destinationZipPath)
+    {
+        EnsureDirectories();
+        
+        // We will create a temporary directory to gather files, then zip it.
+        var tempFolder = Path.Join(Path.GetTempPath(), $"FlowDesk_Export_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempFolder);
+
+        try
+        {
+            // Copy Database
+            if (File.Exists(_dbPath))
+            {
+                File.Copy(_dbPath, Path.Join(tempFolder, "flowdesk.db"));
+            }
+
+            // Copy Files folder
+            var filesFolder = Path.Join(_dataFolder, "files");
+            if (Directory.Exists(filesFolder))
+            {
+                var destFilesFolder = Path.Join(tempFolder, "files");
+                Directory.CreateDirectory(destFilesFolder);
+                foreach (var file in Directory.GetFiles(filesFolder))
+                {
+                    File.Copy(file, Path.Join(destFilesFolder, Path.GetFileName(file)));
+                }
+            }
+            
+            // Delete existing zip if there's any
+            if (File.Exists(destinationZipPath))
+            {
+                File.Delete(destinationZipPath);
+            }
+
+            // Create ZIP
+            ZipFile.CreateFromDirectory(tempFolder, destinationZipPath);
+        }
+        finally
+        {
+            // Cleanup temp folder
+            if (Directory.Exists(tempFolder))
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
     }
 }

@@ -37,7 +37,9 @@
                 <Grid ColumnDefinitions="*, Auto, Auto">
                     <TextBox Grid.Column="0" Text="{Binding EditTitle}" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightBold}" Classes="FlowDesk" BorderThickness="0" Background="Transparent" Margin="0,0,16,0"/>
                     <TextBlock Grid.Column="1" Text="{Binding SaveStatus}" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,16,0" FontSize="{StaticResource FontSizeCaption}"/>
-                    <Button Grid.Column="2" Content="Delete" Command="{Binding ConfirmDeleteCommand}" Classes="Secondary" Foreground="Red" Margin="0,0,8,0"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <Button Content="Delete" Command="{Binding ConfirmDeleteCommand}" Classes="Secondary" Foreground="Red" Margin="0,0,8,0"/>
+                    </StackPanel>
                 </Grid>
                 
                 <StackPanel Orientation="Horizontal" Spacing="8">

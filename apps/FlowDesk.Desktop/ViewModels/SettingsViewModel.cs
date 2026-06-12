@@ -5,6 +5,11 @@ using FlowDesk.Infrastructure.Services;
 using System.Diagnostics;
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 
 namespace FlowDesk.Desktop.ViewModels;
 
@@ -87,6 +92,39 @@ public partial class SettingsViewModel : ViewModelBase
         catch (Exception ex)
         {
             new ExceptionLogger().LogException(ex);
+        }
+    }
+    [RelayCommand]
+    private async Task ExportWorkspaceAsync()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        {
+            var topLevel = TopLevel.GetTopLevel(desktop.MainWindow);
+            if (topLevel == null) return;
+
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd");
+            var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Export Workspace",
+                SuggestedFileName = $"FlowDesk-Workspace-Backup-{timestamp}.zip",
+                DefaultExtension = "zip",
+                ShowOverwritePrompt = true
+            });
+
+            if (file != null)
+            {
+                try
+                {
+                    var backupService = new BackupService();
+                    backupService.ExportWorkspaceToZip(file.Path.LocalPath);
+                    CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Workspace exported successfully."));
+                }
+                catch (Exception ex)
+                {
+                    new ExceptionLogger().LogException(ex);
+                    CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Failed to export workspace."));
+                }
+            }
         }
     }
 }

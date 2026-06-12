@@ -2,8 +2,8 @@
 
 FlowDesk is a clean, native desktop productivity application built with Avalonia UI. It is designed to be a personal, local-first workspace to manage your projects, tasks, documents, and files seamlessly without requiring an internet connection.
 
-## Current Version: v0.9 (Release Candidate)
-FlowDesk is currently in the Release Candidate stage for v1.0. 
+## Current Version: v1.0.0 (Public Release)
+FlowDesk is currently in its v1.0 Public Release stage (Private Workspace only).
 
 ### Features (Private Workspace)
 - **Projects**: Organize your work into distinct projects, track status and priority.
@@ -43,7 +43,8 @@ dotnet publish -c Release -r osx-x64 --self-contained
 Your data is entirely private and belongs to you. We do not collect analytics, telemetry, or upload your data to any cloud servers.
 
 ## Known Limitations
-- The current v0.9 version is strictly a "Private Workspace". There is no cloud sync or server collaboration feature yet.
+- The current v1.0 version is strictly a "Private Workspace". 
+- Local Workspace, Server Workspace, Realtime Collaboration, Advanced Permissions, Comments/Mentions, and Team Sync are planned future features and are not available in this release.
 - Rich text features in Docs are currently limited to basic markdown representation.
 
 ## Roadmap Summary

@@ -35,11 +35,12 @@
                         <TextBox Text="{Binding DataFolderLocation}" Classes="FlowDesk" IsReadOnly="True" Foreground="{DynamicResource TextMutedBrush}"/>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,8,0,0">
-                        <Button Content="Open Data Folder" Command="{Binding OpenDataFolderCommand}" Classes="Secondary"/>
-                        <Button Content="Open Backup Folder" Command="{Binding OpenBackupFolderCommand}" Classes="Secondary"/>
-                        <Button Content="Create Manual Backup" Command="{Binding CreateManualBackupCommand}" Classes="Primary"/>
-                    </StackPanel>
+                    <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Open Data Folder" Command="{Binding OpenDataFolderCommand}" Classes="Secondary" Margin="0,0,16,16"/>
+                        <Button Content="Open Backup Folder" Command="{Binding OpenBackupFolderCommand}" Classes="Secondary" Margin="0,0,16,16"/>
+                        <Button Content="Create Manual Backup" Command="{Binding CreateManualBackupCommand}" Classes="Secondary" Margin="0,0,16,16"/>
+                        <Button Content="Export Workspace (.zip)" Command="{Binding ExportWorkspaceCommand}" Classes="Primary" Margin="0,0,16,16"/>
+                    </WrapPanel>
                 </StackPanel>
             </Border>
         </StackPanel>
