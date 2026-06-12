@@ -1,0 +1,181 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:enums="using:FlowDesk.Core.Enums"
+             x:Class="FlowDesk.Desktop.Views.RequestsView"
+             x:DataType="vm:RequestsViewModel">
+
+    <Grid ColumnDefinitions="*, Auto">
+        <!-- Main Area: Request List -->
+        <ScrollViewer Grid.Column="0">
+            <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
+                <!-- Header -->
+                <Grid ColumnDefinitions="*, Auto, Auto">
+                    <TextBlock Grid.Column="0" Text="Requests" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,16,0" VerticalAlignment="Center">
+                        <TextBox Text="{Binding SearchQuery}" Width="200" Classes="FlowDesk" PlaceholderText="Search requests..." VerticalAlignment="Center"/>
+                        <TextBlock Text="Filter:" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" Margin="8,0,0,0"/>
+                        <ComboBox SelectedItem="{Binding SelectedStatusFilter}" Width="150">
+                            <ComboBoxItem Content="All" />
+                            <enums:RequestStatus>Open</enums:RequestStatus>
+                            <enums:RequestStatus>InProgress</enums:RequestStatus>
+                            <enums:RequestStatus>Waiting</enums:RequestStatus>
+                            <enums:RequestStatus>Resolved</enums:RequestStatus>
+                            <enums:RequestStatus>Closed</enums:RequestStatus>
+                        </ComboBox>
+                        <Button Content="Clear" Command="{Binding ClearFilterCommand}" Classes="Secondary"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Content="New Request" Command="{Binding CreateRequestCommand}" Classes="Primary" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- List Header -->
+                <Grid ColumnDefinitions="3*, 1*, 1*, 1*, 1.5*" Margin="8,0,8,8">
+                    <TextBlock Grid.Column="0" Text="Title" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="1" Text="Type" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="2" Text="Priority" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="3" Text="Status" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="4" Text="Requester" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}"/>
+                </Grid>
+
+                <Border Background="{DynamicResource BorderSoftBrush}" Height="1" Margin="0,0,0,8"/>
+
+                <!-- Request Items -->
+                <ItemsControl ItemsSource="{Binding FilteredRequests}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Margin="0,0,0,8">
+                                <Button Command="{Binding $parent[ItemsControl].((vm:RequestsViewModel)DataContext).OpenDetailCommand}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="{StaticResource Spacing4}">
+                                    <Grid ColumnDefinitions="3*, 1*, 1*, 1*, 1.5*">
+                                        <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource InkBrush}" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding CreatedAt, StringFormat='MMM dd, yyyy'}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Type}" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Priority}" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Status}" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding RequesterName}" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    </Grid>
+                                </Button>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" IsVisible="{Binding IsEmpty}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="0,48">
+                        <PathIcon Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2M20,16H5.17L4,17.17V4H20V16Z" Foreground="{DynamicResource TextMutedBrush}" Width="48" Height="48" Opacity="0.5" Margin="0,0,0,8"/>
+                        <TextBlock Text="No requests found." FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="There are no requests matching the current criteria." Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Detail Side Panel -->
+        <Border Grid.Column="1" Width="450" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1,0,0,0" IsVisible="{Binding IsDetailOpen}" BoxShadow="-4 0 20 0 #1A000000">
+            <Grid RowDefinitions="Auto, *, Auto">
+                <!-- Panel Header -->
+                <StackPanel Grid.Row="0" Spacing="16" Margin="{StaticResource Spacing6}">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0" Text="Request Details" FontSize="{StaticResource FontSizeSectionTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Content="Close" Command="{Binding CloseDetailCommand}" Classes="Secondary" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </Grid>
+                    <Border Background="{DynamicResource BorderSoftBrush}" Height="1"/>
+                </StackPanel>
+
+                <!-- Panel Body -->
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel Spacing="24" Margin="{StaticResource Spacing6}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Title" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <TextBox Text="{Binding EditTitle}" Classes="FlowDesk"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Spacing="8" Margin="0,0,8,0">
+                                <TextBlock Text="Type" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                                <ComboBox SelectedItem="{Binding EditType}" HorizontalAlignment="Stretch">
+                                    <enums:RequestType>Feature</enums:RequestType>
+                                    <enums:RequestType>Bug</enums:RequestType>
+                                    <enums:RequestType>Support</enums:RequestType>
+                                    <enums:RequestType>Access</enums:RequestType>
+                                    <enums:RequestType>Other</enums:RequestType>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="8" Margin="8,0,0,0">
+                                <TextBlock Text="Priority" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                                <ComboBox SelectedItem="{Binding EditPriority}" HorizontalAlignment="Stretch">
+                                    <enums:RequestPriority>Low</enums:RequestPriority>
+                                    <enums:RequestPriority>Medium</enums:RequestPriority>
+                                    <enums:RequestPriority>High</enums:RequestPriority>
+                                    <enums:RequestPriority>Urgent</enums:RequestPriority>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Spacing="8" Margin="0,0,8,0">
+                                <TextBlock Text="Status" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                                <ComboBox SelectedItem="{Binding EditStatus}" HorizontalAlignment="Stretch">
+                                    <enums:RequestStatus>Open</enums:RequestStatus>
+                                    <enums:RequestStatus>InProgress</enums:RequestStatus>
+                                    <enums:RequestStatus>Waiting</enums:RequestStatus>
+                                    <enums:RequestStatus>Resolved</enums:RequestStatus>
+                                    <enums:RequestStatus>Closed</enums:RequestStatus>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="8" Margin="8,0,0,0">
+                                <TextBlock Text="Requester" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                                <TextBox Text="{Binding EditRequesterName}" Classes="FlowDesk"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Project Link" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <ComboBox ItemsSource="{Binding Projects}" SelectedValue="{Binding EditProjectId}" SelectedValueBinding="{Binding Id}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Description" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <TextBox Text="{Binding EditDescription}" Classes="FlowDesk" AcceptsReturn="True" Height="150" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Panel Footer -->
+                <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,1,0,0" Padding="{StaticResource Spacing5}">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Button Grid.Column="0" Content="Delete Request" Command="{Binding ConfirmDeleteCommand}" Classes="Secondary" Foreground="Red" HorizontalAlignment="Left"/>
+                        <Button Grid.Column="1" Content="Save Changes" Command="{Binding SaveDetailsCommand}" Classes="Primary"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Delete Confirmation Modal -->
+        <Grid Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}" ZIndex="100">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
+                <StackPanel Spacing="24">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Delete this request?" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}"/>
+                        <TextBlock Text="This action cannot be undone." Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16">
+                        <Button Content="Cancel" Command="{Binding CancelDeleteCommand}" Classes="Secondary"/>
+                        <Button Content="Delete" Command="{Binding ExecuteDeleteCommand}" Classes="Primary" Background="Red"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

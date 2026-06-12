@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             xmlns:cv="using:FlowDesk.Desktop.Converters"
+             x:Class="FlowDesk.Desktop.Views.TasksView"
+             x:DataType="vm:TasksViewModel">
+
+    <UserControl.Resources>
+        <cv:TaskStatusToBooleanConverter x:Key="StatusToBooleanConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
+            <Grid ColumnDefinitions="*, Auto, Auto">
+                <TextBlock Grid.Column="0" Text="Tasks" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
+                
+                <TextBox Grid.Column="1" Text="{Binding SearchQuery}" Width="200" Classes="FlowDesk" PlaceholderText="Search tasks..." Margin="0,0,16,0" VerticalAlignment="Center"/>
+
+                <!-- Quick Add Inline Form -->
+                <Grid Grid.Column="2" ColumnDefinitions="250, Auto" VerticalAlignment="Center">
+                    <TextBox Grid.Column="0" Text="{Binding NewTaskTitle}" Classes="FlowDesk" PlaceholderText="Quick add a task..." Margin="0,0,8,0">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding CreateTaskCommand}"/>
+                        </TextBox.KeyBindings>
+                    </TextBox>
+                    <Button Grid.Column="1" Content="Add" Command="{Binding CreateTaskCommand}" Classes="Primary"/>
+                </Grid>
+            </Grid>
+
+            <!-- Tasks List -->
+            <ItemsControl ItemsSource="{Binding FilteredTasks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="Auto, *">
+                                <!-- Checkbox Column -->
+                                <CheckBox Grid.Column="0" IsChecked="{Binding Status, Converter={StaticResource StatusToBooleanConverter}, Mode=OneWay}" Command="{Binding $parent[ItemsControl].((vm:TasksViewModel)DataContext).ToggleTaskStatusCommand}" CommandParameter="{Binding}" Margin="16,0,8,0"/>
+                                
+                                <!-- Clickable Row Column -->
+                                <Button Grid.Column="1" Command="{Binding $parent[ItemsControl].((vm:TasksViewModel)DataContext).OpenTaskDetailCommand}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="8,16,16,16" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="{StaticResource FontSizeUI}" Foreground="{DynamicResource InkBrush}" FontWeight="{StaticResource FontWeightMedium}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="{StaticResource RadiusXs}" Padding="8,4" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Status}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" IsVisible="{Binding IsEmpty}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="0,48">
+                    <PathIcon Data="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8L10,17Z" Foreground="{DynamicResource TextMutedBrush}" Width="48" Height="48" Opacity="0.5" Margin="0,0,0,8"/>
+                    <TextBlock Text="No tasks here." FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Add your first task above." Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Task Detail Panel Overlay -->
+        <Grid Background="#66000000" IsVisible="{Binding IsDetailOpen}">
+            <Border Background="{DynamicResource SurfaceBrush}" Width="400" HorizontalAlignment="Right" BoxShadow="0 4 20 0 #33000000">
+                <StackPanel Margin="{StaticResource Spacing6}" Spacing="24">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0" Text="Edit Task" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Content="Close" Command="{Binding CloseTaskDetailCommand}" Classes="Secondary" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </Grid>
+
+                    <StackPanel Spacing="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Title" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <TextBox Text="{Binding EditTitle}" Classes="FlowDesk"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Project" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <ComboBox ItemsSource="{Binding Projects}" SelectedValue="{Binding EditProjectId}" SelectedValueBinding="{Binding Id}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Description" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <TextBox Text="{Binding EditDescription}" Classes="FlowDesk" AcceptsReturn="True" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16" Margin="0,16,0,0">
+                            <Button Content="Delete Task" Command="{Binding ConfirmDeleteCommand}" Classes="Secondary" Foreground="Red"/>
+                            <Button Content="Save Changes" Command="{Binding SaveTaskDetailsCommand}" Classes="Primary"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Delete Confirmation Modal -->
+        <Grid Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}" ZIndex="100">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
+                <StackPanel Spacing="24">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Delete this task?" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}"/>
+                        <TextBlock Text="This action cannot be undone." Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16">
+                        <Button Content="Cancel" Command="{Binding CancelDeleteCommand}" Classes="Secondary"/>
+                        <Button Content="Delete" Command="{Binding ExecuteDeleteCommand}" Classes="Primary" Background="Red"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

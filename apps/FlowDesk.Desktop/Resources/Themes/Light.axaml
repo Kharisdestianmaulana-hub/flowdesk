@@ -1,0 +1,48 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Light Surfaces -->
+    <Color x:Key="ColorCanvas">#F5F5F7</Color>
+    <Color x:Key="ColorWindow">#F8F8FA</Color>
+    <Color x:Key="ColorSidebar">#F2F2F4</Color>
+    <Color x:Key="ColorSurface">#FFFFFF</Color>
+    <Color x:Key="ColorSurfaceSubtle">#FAFAFB</Color>
+    <Color x:Key="ColorSurfaceMuted">#F0F0F2</Color>
+    <Color x:Key="ColorSurfaceElevated">#FFFFFF</Color>
+
+    <!-- Text -->
+    <Color x:Key="ColorInk">#1D1D1F</Color>
+    <Color x:Key="ColorText">#2C2C2E</Color>
+    <Color x:Key="ColorTextMuted">#6E6E73</Color>
+    <Color x:Key="ColorTextSubtle">#8E8E93</Color>
+    <Color x:Key="ColorTextDisabled">#A1A1A6</Color>
+    <Color x:Key="ColorTextInverse">#FFFFFF</Color>
+
+    <!-- Borders -->
+    <Color x:Key="ColorBorder">#D8D8DC</Color>
+    <Color x:Key="ColorBorderSoft">#E1E1E4</Color>
+    <Color x:Key="ColorBorderSubtle">#ECECEF</Color>
+    <Color x:Key="ColorDivider">#D1D1D6</Color>
+    <Color x:Key="ColorSeparator">#E5E5EA</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="CanvasBrush" Color="{StaticResource ColorCanvas}"/>
+    <SolidColorBrush x:Key="WindowBrush" Color="{StaticResource ColorWindow}"/>
+    <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource ColorSidebar}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource ColorSurface}"/>
+    <SolidColorBrush x:Key="SurfaceSubtleBrush" Color="{StaticResource ColorSurfaceSubtle}"/>
+    <SolidColorBrush x:Key="SurfaceMutedBrush" Color="{StaticResource ColorSurfaceMuted}"/>
+    <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="{StaticResource ColorSurfaceElevated}"/>
+
+    <SolidColorBrush x:Key="InkBrush" Color="{StaticResource ColorInk}"/>
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource ColorText}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource ColorTextMuted}"/>
+    <SolidColorBrush x:Key="TextSubtleBrush" Color="{StaticResource ColorTextSubtle}"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource ColorTextDisabled}"/>
+    <SolidColorBrush x:Key="TextInverseBrush" Color="{StaticResource ColorTextInverse}"/>
+
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource ColorBorder}"/>
+    <SolidColorBrush x:Key="BorderSoftBrush" Color="{StaticResource ColorBorderSoft}"/>
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource ColorBorderSubtle}"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource ColorDivider}"/>
+    <SolidColorBrush x:Key="SeparatorBrush" Color="{StaticResource ColorSeparator}"/>
+</ResourceDictionary>

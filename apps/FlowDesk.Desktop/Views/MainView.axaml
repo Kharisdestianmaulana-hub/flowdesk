@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
+             x:Class="FlowDesk.Desktop.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+    <Grid ColumnDefinitions="240, *">
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto, *, Auto" Margin="{StaticResource Spacing3}">
+                
+                <!-- Workspace Switcher Area -->
+                <StackPanel Grid.Row="0" Margin="8,8,8,24">
+                    <TextBlock Text="{Binding WorkspaceName}" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeBody}" Foreground="{DynamicResource InkBrush}"/>
+                    <TextBlock Text="Private Workspace" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextSubtleBrush}"/>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <StackPanel Grid.Row="1" Spacing="4">
+                    <Button Content="Home" Command="{Binding NavigateCommand}" CommandParameter="Home" Classes="SidebarItem" Classes.active="{Binding IsHomeActive}"/>
+                    <Button Content="Projects" Command="{Binding NavigateCommand}" CommandParameter="Projects" Classes="SidebarItem" Classes.active="{Binding IsProjectsActive}"/>
+                    <Button Content="Tasks" Command="{Binding NavigateCommand}" CommandParameter="Tasks" Classes="SidebarItem" Classes.active="{Binding IsTasksActive}"/>
+                    <Button Content="Docs" Command="{Binding NavigateCommand}" CommandParameter="Docs" Classes="SidebarItem" Classes.active="{Binding IsDocsActive}"/>
+                    <Button Content="Files" Command="{Binding NavigateCommand}" CommandParameter="Files" Classes="SidebarItem" Classes.active="{Binding IsFilesActive}"/>
+                    <Button Content="Requests" Command="{Binding NavigateCommand}" CommandParameter="Requests" Classes="SidebarItem" Classes.active="{Binding IsRequestsActive}"/>
+                    <Button Content="Members" Command="{Binding NavigateCommand}" CommandParameter="Members" Classes="SidebarItem" Classes.active="{Binding IsMembersActive}"/>
+                </StackPanel>
+
+                <!-- Settings -->
+                <StackPanel Grid.Row="2">
+                    <Button Content="Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings" Classes="SidebarItem" Classes.active="{Binding IsSettingsActive}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1" RowDefinitions="48, *">
+            <!-- Toolbar -->
+            <Border Grid.Row="0" Background="{DynamicResource WindowBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="*, Auto" Margin="16,0">
+                    <TextBlock Grid.Column="0" Text="Toolbar" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <!-- Primary action button will go here depending on context -->
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <ContentControl Grid.Row="1" Content="{Binding CurrentView}" />
+        </Grid>
+
+        <!-- Toast Notification Overlay -->
+        <Border Classes.visible="{Binding IsToastVisible}" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,32" IsHitTestVisible="False" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="16,12" BoxShadow="0 4 20 0 #20000000">
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Border.Transitions>
+            <Border.Styles>
+                <Style Selector="Border">
+                    <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="RenderTransform" Value="translateY(20px)"/>
+                </Style>
+                <Style Selector="Border.visible">
+                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="RenderTransform" Value="translateY(0px)"/>
+                </Style>
+            </Border.Styles>
+            
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <!-- Basic Icon -->
+                <PathIcon Data="{StaticResource CheckmarkIcon}" Foreground="{DynamicResource PrimaryBrush}" Width="16" Height="16"/>
+                <TextBlock Text="{Binding ToastMessage}" Foreground="{DynamicResource InkBrush}" FontWeight="{StaticResource FontWeightMedium}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.SidebarItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+            <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}"/>
+            <Setter Property="FontSize" Value="{StaticResource FontSizeUI}"/>
+        </Style>
+        <Style Selector="Button.SidebarItem /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextMutedBrush}"/>
+        </Style>
+        <Style Selector="Button.SidebarItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}"/>
+            <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextBrush}"/>
+        </Style>
+        <Style Selector="Button.SidebarItem.active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BorderSoftBrush}"/>
+            <Setter Property="TextBlock.Foreground" Value="{DynamicResource InkBrush}"/>
+            <Setter Property="TextBlock.FontWeight" Value="{StaticResource FontWeightSemiBold}"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

@@ -1,0 +1,41 @@
+# .NET build output
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+
+# VS Code / Antigravity local settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# Temporary Avalonia test project
+TestAvalonia/
+
+# FlowDesk local user data
+FlowDeskData/
+flowdesk.db
+*.db
+*.db-shm
+*.db-wal
+
+# App runtime folders
+files/
+backups/
+logs/
+
+# Publish / release output
+publish/
+dist/
+release/
+artifacts/
+
+# NuGet packages cache if generated locally
+packages/
+run_log.txt

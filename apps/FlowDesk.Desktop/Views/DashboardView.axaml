@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
+            <TextBlock Text="Home" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+            
+            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto" Margin="0,16,0,0">
+                <!-- My Tasks -->
+                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="0,0,8,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="My Tasks" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        
+                        <!-- Empty State -->
+                        <TextBlock Text="No pending tasks. You are all caught up!" Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasTasks}"/>
+                        
+                        <!-- Tasks List -->
+                        <ItemsControl ItemsSource="{Binding Tasks}" IsVisible="{Binding HasTasks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Title}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Active Projects -->
+                <Border Grid.Column="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="8,0,0,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Active Projects" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        
+                        <!-- Empty State -->
+                        <TextBlock Text="Create your first project to get started." Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasProjects}"/>
+                        
+                        <!-- Projects List -->
+                        <ItemsControl ItemsSource="{Binding Projects}" IsVisible="{Binding HasProjects}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="{StaticResource FontWeightMedium}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

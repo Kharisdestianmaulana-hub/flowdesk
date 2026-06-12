@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="{StaticResource Spacing8}" Spacing="32" MaxWidth="600" HorizontalAlignment="Center">
+            <TextBlock Text="Settings" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                <StackPanel Spacing="24">
+                    <TextBlock Text="General Profile" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                    
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Workspace Name" FontWeight="{StaticResource FontWeightMedium}"/>
+                        <TextBox Text="{Binding WorkspaceName}" Classes="FlowDesk"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Your Name" FontWeight="{StaticResource FontWeightMedium}"/>
+                        <TextBox Text="{Binding UserName}" Classes="FlowDesk"/>
+                    </StackPanel>
+
+                    <Button Content="Save Changes" Command="{Binding SaveSettingsCommand}" Classes="Primary" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                <StackPanel Spacing="24">
+                    <TextBlock Text="Data Storage &amp; Backup" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                    
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Local Data Location" FontWeight="{StaticResource FontWeightMedium}"/>
+                        <TextBox Text="{Binding DataFolderLocation}" Classes="FlowDesk" IsReadOnly="True" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,8,0,0">
+                        <Button Content="Open Data Folder" Command="{Binding OpenDataFolderCommand}" Classes="Secondary"/>
+                        <Button Content="Open Backup Folder" Command="{Binding OpenBackupFolderCommand}" Classes="Secondary"/>
+                        <Button Content="Create Manual Backup" Command="{Binding CreateManualBackupCommand}" Classes="Primary"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.ProjectsView"
+             x:DataType="vm:ProjectsViewModel">
+
+    <Panel>
+        <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
+            <Grid ColumnDefinitions="*, Auto, Auto">
+                <TextBlock Grid.Column="0" Text="Projects" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="1" Text="{Binding SearchQuery}" Width="250" Classes="FlowDesk" PlaceholderText="Search projects..." Margin="0,0,16,0" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Content="Create Project" Command="{Binding OpenCreateModalCommand}" Classes="Primary" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Projects List -->
+            <ItemsControl ItemsSource="{Binding FilteredProjects}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Command="{Binding $parent[ItemsControl].((vm:ProjectsViewModel)DataContext).NavigateToDetailCommand}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,8">
+                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Spacing5}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeTitle}" Foreground="{DynamicResource InkBrush}"/>
+                                    <TextBlock Text="{Binding Description}" Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="0,4,0,0"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                        <Border Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="{StaticResource RadiusXs}" Padding="6,2">
+                                            <TextBlock Text="{Binding Status}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextBrush}"/>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" IsVisible="{Binding IsEmpty}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Margin="0,48">
+                    <PathIcon Data="M20,6H12L10,4H4C2.89,4 2.01,4.89 2.01,6L2,18C2,19.1 2.9,20 4,20H20C21.1,20 22,19.1 22,18V8C22,6.9 21.1,6 20,6M20,18H4V8H20V18Z" Foreground="{DynamicResource TextMutedBrush}" Width="48" Height="48" Opacity="0.5" Margin="0,0,0,8"/>
+                    <TextBlock Text="No projects yet." FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Create your first project to organize your workspace." Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Overlay Modal -->
+        <Border Background="#80000000" IsVisible="{Binding IsCreateModalOpen}" ZIndex="100">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="24" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 10 30 0 #40000000">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Create Project" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                    
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Project Name *" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBox Text="{Binding NewProjectName}" Classes="FlowDesk" PlaceholderText="e.g. Website Redesign"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Description (Optional)" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBox Text="{Binding NewProjectDescription}" Classes="FlowDesk" PlaceholderText="Describe this project" Height="80" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*, *" Margin="0,16,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Command="{Binding CloseCreateModalCommand}" Classes="Secondary" HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
+                        <Button Grid.Column="1" Content="Create" Command="{Binding CreateProjectCommand}" Classes="Primary" HorizontalAlignment="Stretch" Margin="8,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Panel>
+</UserControl>

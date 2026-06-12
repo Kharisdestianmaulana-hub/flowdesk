@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="FlowDesk.Desktop.Views.CreatePrivateWorkspaceView"
+             x:DataType="vm:CreatePrivateWorkspaceViewModel">
+
+    <Grid>
+        <Button Content="← Back" Command="{Binding CancelCommand}" Classes="Secondary" 
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{StaticResource Spacing6}"/>
+                
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24" Width="420">
+            
+            <TextBlock Text="Create Private Workspace" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                <StackPanel Spacing="16">
+                    
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Your Name" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBox Text="{Binding UserName}" Classes="FlowDesk" PlaceholderText="e.g. John Doe"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Workspace Name" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBox Text="{Binding WorkspaceName}" Classes="FlowDesk" PlaceholderText="e.g. My Studio"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Workspace Type" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <!-- Simple textbox for MVP instead of combobox for simplicity -->
+                        <TextBox Text="{Binding WorkspaceType}" Classes="FlowDesk" PlaceholderText="e.g. General Team"/>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*, *" Margin="0,16,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Command="{Binding CancelCommand}" Classes="Secondary" HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
+                        <Button Grid.Column="1" Content="Create Workspace" Command="{Binding CreateWorkspaceCommand}" Classes="Primary" HorizontalAlignment="Stretch" Margin="8,0,0,0"/>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </Grid>
+
+</UserControl>

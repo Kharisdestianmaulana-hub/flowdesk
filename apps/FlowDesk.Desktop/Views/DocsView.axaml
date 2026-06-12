@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.DocsView"
+             x:DataType="vm:DocsViewModel">
+
+    <Grid ColumnDefinitions="300, 1, *" Margin="{StaticResource Spacing8}">
+        <!-- Sidebar: Document List -->
+        <StackPanel Grid.Column="0" Spacing="16" Margin="0,0,16,0">
+            <Grid ColumnDefinitions="*, Auto">
+                <TextBlock Grid.Column="0" Text="Docs" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="New Doc" Command="{Binding CreateDocumentCommand}" Classes="Primary" VerticalAlignment="Center"/>
+            </Grid>
+
+            <TextBox Text="{Binding SearchQuery}" Classes="FlowDesk" PlaceholderText="Search docs..." Margin="0"/>
+            
+            <ListBox ItemsSource="{Binding FilteredDocuments}" SelectedItem="{Binding SelectedDocument}" Background="Transparent" BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Spacing3}" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontWeight="{StaticResource FontWeightMedium}"/>
+                                <TextBlock Text="{Binding UpdatedAt, StringFormat='g'}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+
+        <!-- Divider -->
+        <Border Grid.Column="1" Background="{DynamicResource BorderSoftBrush}"/>
+
+        <!-- Main Area: Editor -->
+        <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Margin="16,0,0,0" IsVisible="{Binding IsDocumentSelected}">
+            <StackPanel Margin="{StaticResource Spacing6}" Spacing="16" VerticalAlignment="Stretch">
+                <Grid ColumnDefinitions="*, Auto, Auto">
+                    <TextBox Grid.Column="0" Text="{Binding EditTitle}" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightBold}" Classes="FlowDesk" BorderThickness="0" Background="Transparent" Margin="0,0,16,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding SaveStatus}" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,16,0" FontSize="{StaticResource FontSizeCaption}"/>
+                    <Button Grid.Column="2" Content="Delete" Command="{Binding ConfirmDeleteCommand}" Classes="Secondary" Foreground="Red" Margin="0,0,8,0"/>
+                </Grid>
+                
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Project:" VerticalAlignment="Center" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <ComboBox ItemsSource="{Binding Projects}" SelectedValue="{Binding SelectedDocument.ProjectId}" SelectedValueBinding="{Binding Id}" Width="250">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <Border Background="{DynamicResource BorderSoftBrush}" Height="1"/>
+                <TextBox Text="{Binding EditContent}" AcceptsReturn="True" TextWrapping="Wrap" Classes="FlowDesk" BorderThickness="0" Background="Transparent" MinHeight="400" VerticalAlignment="Stretch"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Empty State (No Document Selected) -->
+        <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Margin="16,0,0,0" IsVisible="{Binding !IsDocumentSelected}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <PathIcon Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" Foreground="{DynamicResource TextMutedBrush}" Width="48" Height="48" Opacity="0.5" Margin="0,0,0,8"/>
+                <TextBlock Text="No document selected." FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Select a document or create a new one." Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Delete Confirmation Modal -->
+        <Grid Grid.ColumnSpan="3" Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
+                <StackPanel Spacing="24">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Delete Document?" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}"/>
+                        <TextBlock Text="Are you sure you want to delete this document? This action cannot be undone." Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
+                    <Grid ColumnDefinitions="*, *">
+                        <Button Grid.Column="0" Content="Cancel" Command="{Binding CancelDeleteCommand}" Classes="Secondary" Margin="0,0,8,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Column="1" Content="Delete" Command="{Binding ExecuteDeleteCommand}" Classes="Primary" Background="Red" BorderBrush="Red" Margin="8,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

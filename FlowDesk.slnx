@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/apps/">
+    <Project Path="apps/FlowDesk.Desktop/FlowDesk.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FlowDesk.Application/FlowDesk.Application.csproj" />
+    <Project Path="src/FlowDesk.Core/FlowDesk.Core.csproj" />
+    <Project Path="src/FlowDesk.Infrastructure/FlowDesk.Infrastructure.csproj" />
+  </Folder>
+</Solution>
