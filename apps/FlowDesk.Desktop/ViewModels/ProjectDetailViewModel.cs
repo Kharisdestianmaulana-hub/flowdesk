@@ -23,6 +23,7 @@ public partial class ProjectDetailViewModel : ViewModelBase
 
     [ObservableProperty] private string _editName = string.Empty;
     [ObservableProperty] private string? _editDescription;
+    [ObservableProperty] private string _editTagsString = string.Empty;
     [ObservableProperty] private FlowDesk.Core.Enums.ProjectStatus _editStatus;
     [ObservableProperty] private FlowDesk.Core.Enums.ProjectType _editType;
 
@@ -38,6 +39,8 @@ public partial class ProjectDetailViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<ActivityLog> _activityLogs = new();
 
+    private readonly TagService _tagService = new();
+
     public ProjectDetailViewModel(Project project, MainViewModel mainViewModel)
     {
         _project = project;
@@ -47,6 +50,9 @@ public partial class ProjectDetailViewModel : ViewModelBase
         EditDescription = project.Description;
         EditStatus = project.Status;
         EditType = project.Type;
+
+        var tags = _tagService.GetTagsForProject(project.Id);
+        EditTagsString = string.Join(", ", tags.Select(t => t.Name));
 
         LoadData();
     }
@@ -81,6 +87,7 @@ public partial class ProjectDetailViewModel : ViewModelBase
 
         if (updated != null)
         {
+            _tagService.UpdateProjectTags(Project.Id, EditTagsString);
             Project = updated;
             LoadData(); // reload logs
             CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Project details saved."));

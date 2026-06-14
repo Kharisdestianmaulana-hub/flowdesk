@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.LocalWorkspaceSelectionView"
+             x:DataType="vm:LocalWorkspaceSelectionViewModel">
+
+    <Grid>
+        <Button Content="← Back" Command="{Binding GoBackCommand}" Classes="Secondary" 
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{StaticResource Spacing6}"/>
+                
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="32">
+            
+            <StackPanel Spacing="8" HorizontalAlignment="Center">
+                <TextBlock Text="Local Workspace" 
+                           FontSize="{StaticResource FontSizeDisplay}" 
+                           FontWeight="{StaticResource FontWeightSemiBold}" 
+                           Foreground="{DynamicResource InkBrush}"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Do you want to host a new workspace or join an existing one?" 
+                           FontSize="{StaticResource FontSizeTitle}" 
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="320, 320" RowDefinitions="Auto" Margin="0,32,0,0" HorizontalAlignment="Center">
+                <!-- Host Workspace Card -->
+                <Border Grid.Column="0" Margin="12" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Host New Workspace" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBlock Text="Create a new workspace on this computer and act as the host server for your team." TextWrapping="Wrap" Foreground="{DynamicResource TextMutedBrush}" FontSize="{StaticResource FontSizeBody}" MinHeight="60"/>
+                        <Button Content="Create Host" Command="{Binding HostNewWorkspaceCommand}" Classes="Primary" HorizontalAlignment="Stretch" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Join Workspace Card -->
+                <Border Grid.Column="1" Margin="12" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Join Existing" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBlock Text="Connect to a workspace that is currently being hosted by your teammate on this network." TextWrapping="Wrap" Foreground="{DynamicResource TextMutedBrush}" FontSize="{StaticResource FontSizeBody}" MinHeight="60"/>
+                        <Button Content="Join Workspace" Command="{Binding JoinExistingWorkspaceCommand}" Classes="Secondary" HorizontalAlignment="Stretch" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+        </StackPanel>
+    </Grid>
+
+</UserControl>

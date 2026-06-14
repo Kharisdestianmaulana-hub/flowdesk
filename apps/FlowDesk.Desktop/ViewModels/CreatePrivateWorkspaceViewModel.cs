@@ -17,9 +17,24 @@ public partial class CreatePrivateWorkspaceViewModel : ViewModelBase
     [ObservableProperty]
     private string _workspaceType = "General Team";
 
-    public CreatePrivateWorkspaceViewModel(MainWindowViewModel mainViewModel)
+    [ObservableProperty]
+    private string _pageTitle = "Create Private Workspace";
+
+    [ObservableProperty]
+    private string _buttonTitle = "Create Workspace";
+
+    private bool _isLocalMode;
+
+    public CreatePrivateWorkspaceViewModel(MainWindowViewModel mainViewModel, bool isLocalMode = false)
     {
         _mainViewModel = mainViewModel;
+        _isLocalMode = isLocalMode;
+
+        if (_isLocalMode)
+        {
+            PageTitle = "Create Local Workspace";
+            ButtonTitle = "Create Local Workspace";
+        }
     }
 
     [RelayCommand]
@@ -33,7 +48,7 @@ public partial class CreatePrivateWorkspaceViewModel : ViewModelBase
         {
             Name = WorkspaceName,
             Type = string.IsNullOrWhiteSpace(WorkspaceType) ? "General" : WorkspaceType,
-            Mode = FlowDesk.Core.Enums.WorkspaceMode.Private
+            Mode = _isLocalMode ? FlowDesk.Core.Enums.WorkspaceMode.Local : FlowDesk.Core.Enums.WorkspaceMode.Private
         };
         db.Workspaces.Add(workspace);
 

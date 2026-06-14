@@ -23,6 +23,11 @@
                                 <TextBox Text="{Binding EditDescription}" Classes="FlowDesk" AcceptsReturn="True" Height="80"/>
                             </StackPanel>
 
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Tags (Comma separated)" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                                <TextBox Text="{Binding EditTagsString}" Classes="FlowDesk" ToolTip.Tip="Enter comma separated tags"/>
+                            </StackPanel>
+
                             <Grid ColumnDefinitions="*, *">
                                 <StackPanel Grid.Column="0" Spacing="8" Margin="0,0,8,0">
                                     <TextBlock Text="Status" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
@@ -125,7 +130,7 @@
         </ScrollViewer>
 
         <!-- Delete Confirmation Modal -->
-        <Grid Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}" ZIndex="100">
+        <Grid Classes="ModalOverlay" Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}" ZIndex="100">
             <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
                 <StackPanel Spacing="24">
                     <StackPanel Spacing="8">

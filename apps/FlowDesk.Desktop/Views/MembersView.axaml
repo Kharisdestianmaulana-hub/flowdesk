@@ -5,33 +5,72 @@
              x:DataType="vm:MembersViewModel">
 
     <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
-        <TextBlock Text="Members" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+        <TextBlock Text="Members &amp; Join Requests" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
 
-        <!-- Table Header -->
-        <Border Background="{DynamicResource SurfaceMutedBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusSm}" Padding="16,8">
-            <Grid ColumnDefinitions="2*, 1*, 1*">
-                <TextBlock Grid.Column="0" Text="Name" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
-                <TextBlock Grid.Column="1" Text="Role" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
-                <TextBlock Grid.Column="2" Text="Workspace Mode" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
-            </Grid>
-        </Border>
+        <!-- Pending Join Requests (Visible only to Host) -->
+        <StackPanel Spacing="16" IsVisible="{Binding MainViewModel.HasPendingJoinRequests}">
+            <TextBlock Text="Pending Join Requests" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource DangerBrush}"/>
+            
+            <ItemsControl ItemsSource="{Binding MainViewModel.PendingJoinRequests}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource DangerSoftBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding UserName}" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="16" Foreground="{DynamicResource InkBrush}"/>
+                                    <TextBlock Text="Wants to join the workspace" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <Button Content="Decline" Command="{Binding $parent[UserControl].((vm:MembersViewModel)DataContext).RejectJoinCommand}" CommandParameter="{Binding}" Classes="Secondary"/>
+                                    <Button Content="Accept" Command="{Binding $parent[UserControl].((vm:MembersViewModel)DataContext).ApproveJoinCommand}" CommandParameter="{Binding}" Classes="Primary"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
 
-        <!-- Current User (Owner) -->
-        <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="16,12">
-            <Grid ColumnDefinitions="2*, 1*, 1*">
-                <TextBlock Grid.Column="0" Text="{Binding UserName}" FontWeight="{StaticResource FontWeightMedium}" VerticalAlignment="Center" Foreground="{DynamicResource InkBrush}"/>
-                <Border Grid.Column="1" Background="{DynamicResource PrimarySoftBrush}" CornerRadius="{StaticResource RadiusXs}" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <TextBlock Text="Owner" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="{StaticResource FontWeightSemiBold}"/>
-                </Border>
-                <TextBlock Grid.Column="2" Text="Private" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
+        <!-- Active Members -->
+        <StackPanel Spacing="16">
+            <TextBlock Text="Active Members" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+
+            <Border Background="{DynamicResource SurfaceMutedBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusSm}" Padding="16,8">
+                <Grid ColumnDefinitions="2*, 1*, 1*, Auto">
+                    <TextBlock Grid.Column="0" Text="Name" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="1" Text="Role" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="2" Text="Status" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Grid.Column="3" Text="Actions" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource TextMutedBrush}" Width="80" TextAlignment="Right" IsVisible="{Binding IsHost}"/>
+                </Grid>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding Members}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="16,12">
+                            <Grid ColumnDefinitions="2*, 1*, 1*, Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="{StaticResource FontWeightMedium}" VerticalAlignment="Center" Foreground="{DynamicResource InkBrush}"/>
+                                <Border Grid.Column="1" Background="{DynamicResource PrimarySoftBrush}" CornerRadius="{StaticResource RadiusXs}" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Role}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                                </Border>
+                                <TextBlock Grid.Column="2" Text="Active" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="3" Content="Remove" Classes="Secondary" Width="80" 
+                                        IsVisible="{Binding $parent[UserControl].((vm:MembersViewModel)DataContext).IsHost}"
+                                        Command="{Binding $parent[UserControl].((vm:MembersViewModel)DataContext).KickMemberCommand}" 
+                                        CommandParameter="{Binding}"
+                                        Foreground="{DynamicResource DangerBrush}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
 
         <!-- Info Note -->
         <Border Background="{DynamicResource SurfaceMutedBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Spacing4}" Margin="0,16,0,0">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="ℹ️" VerticalAlignment="Center"/>
-                <TextBlock Text="In Private Workspace mode, you are the sole member and owner." Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding InfoNote}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
     </StackPanel>

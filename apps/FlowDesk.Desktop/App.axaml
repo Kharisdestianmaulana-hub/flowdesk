@@ -11,14 +11,21 @@
   
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceInclude x:Key="Light" Source="avares://FlowDesk.Desktop/Resources/Themes/Light.axaml"/>
+                <ResourceInclude x:Key="Dark" Source="avares://FlowDesk.Desktop/Resources/Themes/Dark.axaml"/>
+                <ResourceInclude x:Key="Default" Source="avares://FlowDesk.Desktop/Resources/Themes/Light.axaml"/>
+            </ResourceDictionary.ThemeDictionaries>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://FlowDesk.Desktop/Resources/Colors.axaml"/>
                 <ResourceInclude Source="avares://FlowDesk.Desktop/Resources/Typography.axaml"/>
                 <ResourceInclude Source="avares://FlowDesk.Desktop/Resources/Spacing.axaml"/>
-                <ResourceInclude Source="avares://FlowDesk.Desktop/Resources/Themes/Light.axaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <StreamGeometry x:Key="CheckmarkIcon">M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z</StreamGeometry>
+            <StreamGeometry x:Key="ProjectIcon">M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z</StreamGeometry>
+            <StreamGeometry x:Key="DocumentIcon">M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z</StreamGeometry>
+            <StreamGeometry x:Key="FileIcon">M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z</StreamGeometry>
         </ResourceDictionary>
     </Application.Resources>
 

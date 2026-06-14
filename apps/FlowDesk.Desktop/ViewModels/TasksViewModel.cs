@@ -9,10 +9,9 @@ using System.Linq;
 
 namespace FlowDesk.Desktop.ViewModels;
 
-public partial class TasksViewModel : ViewModelBase
+public partial class TasksViewModel : ViewModelBase, IPageCommands
 {
-    private readonly TaskService _taskService = new();
-    private readonly ProjectService _projectService = new();
+    private readonly FlowDesk.Core.Interfaces.IDataSource _dataSource = FlowDesk.Desktop.Services.DataSourceProvider.Current;
 
     [ObservableProperty]
     private ObservableCollection<TaskItem> _tasks = new();
@@ -26,22 +25,35 @@ public partial class TasksViewModel : ViewModelBase
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
-    public bool IsEmpty => FilteredTasks.Count == 0;
+    [ObservableProperty]
+    private string _sortBy = "Title";
 
     [ObservableProperty]
-    private string _newTaskTitle = string.Empty;
+    private bool _sortAscending = true;
+
+    public bool IsEmpty => FilteredTasks.Count == 0;
+
+    [ObservableProperty] private bool _isAddOpen;
+    [ObservableProperty] private string _addTitle = string.Empty;
+    [ObservableProperty] private System.Guid? _addProjectId;
+    [ObservableProperty] private TaskPriority _addPriority = TaskPriority.Medium;
+    [ObservableProperty] private string _addDescription = string.Empty;
+    [ObservableProperty] private string _addTagsString = string.Empty;
+    [ObservableProperty] private System.DateTime? _addDueDate;
+
+    public ObservableCollection<TaskPriority> Priorities { get; } = new(System.Enum.GetValues<TaskPriority>());
 
     public TasksViewModel()
     {
-        LoadTasks();
+        _ = LoadTasksAsync();
     }
 
-    private void LoadTasks()
+    private async System.Threading.Tasks.Task LoadTasksAsync()
     {
-        var dbTasks = _taskService.GetTasks();
+        var dbTasks = await _dataSource.GetTasksAsync();
         Tasks = new ObservableCollection<TaskItem>(dbTasks);
 
-        var dbProjects = _projectService.GetProjects();
+        var dbProjects = await _dataSource.GetProjectsAsync();
         Projects = new ObservableCollection<Project>(dbProjects);
 
         ApplyFilter();
@@ -67,29 +79,90 @@ public partial class TasksViewModel : ViewModelBase
             );
             FilteredTasks = new ObservableCollection<TaskItem>(filtered);
         }
+
+        // Apply Sorting
+        var sorted = SortBy switch
+        {
+            "Status" => SortAscending ? FilteredTasks.OrderBy(t => t.Status) : FilteredTasks.OrderByDescending(t => t.Status),
+            "Priority" => SortAscending ? FilteredTasks.OrderBy(t => t.Priority) : FilteredTasks.OrderByDescending(t => t.Priority),
+            "DueDate" => SortAscending ? FilteredTasks.OrderBy(t => t.DueDate ?? System.DateTime.MaxValue) : FilteredTasks.OrderByDescending(t => t.DueDate ?? System.DateTime.MinValue),
+            "UpdatedAt" => SortAscending ? FilteredTasks.OrderBy(t => t.UpdatedAt) : FilteredTasks.OrderByDescending(t => t.UpdatedAt),
+            _ => SortAscending ? FilteredTasks.OrderBy(t => t.Title) : FilteredTasks.OrderByDescending(t => t.Title)
+        };
+
+        FilteredTasks = new ObservableCollection<TaskItem>(sorted);
         OnPropertyChanged(nameof(IsEmpty));
     }
 
     [RelayCommand]
-    private void CreateTask()
+    private void Sort(string columnName)
     {
-        if (string.IsNullOrWhiteSpace(NewTaskTitle)) return;
+        if (SortBy == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortBy = columnName;
+            SortAscending = true;
+        }
+        ApplyFilter();
+    }
 
-        var task = _taskService.CreateTask(
-            NewTaskTitle,
-            null,
-            FlowDesk.Core.Enums.TaskStatus.ToDo,
-            TaskPriority.Medium
-        );
+    [RelayCommand]
+    private void OpenAddModal()
+    {
+        AddTitle = string.Empty;
+        AddProjectId = null;
+        AddPriority = TaskPriority.Medium;
+        AddDescription = string.Empty;
+        AddTagsString = string.Empty;
+        AddDueDate = null;
+        IsAddOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseAddModal()
+    {
+        IsAddOpen = false;
+    }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task CreateTaskAsync()
+    {
+        if (string.IsNullOrWhiteSpace(AddTitle)) return;
+
+        var newTask = new TaskItem
+        {
+            Title = AddTitle,
+            ProjectId = AddProjectId,
+            Status = FlowDesk.Core.Enums.TaskStatus.ToDo,
+            Priority = AddPriority,
+            DueDate = AddDueDate,
+            Description = AddDescription,
+            CreatedAt = System.DateTime.UtcNow,
+            UpdatedAt = System.DateTime.UtcNow
+        };
+
+        var task = await _dataSource.CreateTaskAsync(newTask);
+
+        if (!string.IsNullOrWhiteSpace(AddTagsString))
+        {
+            await _dataSource.UpdateTaskTagsAsync(task.Id, AddTagsString);
+        }
+        
+        // Reload task to get tags locally
+        var updatedTask = await _dataSource.GetTaskAsync(task.Id);
+        if (updatedTask != null) task = updatedTask;
 
         Tasks.Insert(0, task);
-        NewTaskTitle = string.Empty;
+        IsAddOpen = false;
         ApplyFilter();
         CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Task created."));
     }
 
     [RelayCommand]
-    private void ToggleTaskStatus(TaskItem task)
+    private async System.Threading.Tasks.Task ToggleTaskStatusAsync(TaskItem task)
     {
         if (task == null) return;
 
@@ -97,16 +170,16 @@ public partial class TasksViewModel : ViewModelBase
             ? FlowDesk.Core.Enums.TaskStatus.ToDo 
             : FlowDesk.Core.Enums.TaskStatus.Done;
 
-        var updatedTask = _taskService.UpdateTaskStatus(task.Id, newStatus);
+        task.Status = newStatus;
+        task.UpdatedAt = System.DateTime.UtcNow;
         
-        if (updatedTask != null)
+        await _dataSource.UpdateTaskAsync(task);
+        
+        var index = Tasks.IndexOf(task);
+        if (index >= 0)
         {
-            var index = Tasks.IndexOf(task);
-            if (index >= 0)
-            {
-                Tasks[index] = updatedTask;
-                ApplyFilter();
-            }
+            Tasks[index] = task;
+            ApplyFilter();
         }
     }
 
@@ -118,9 +191,11 @@ public partial class TasksViewModel : ViewModelBase
 
     [ObservableProperty] private string _editTitle = string.Empty;
     [ObservableProperty] private string? _editDescription;
+    [ObservableProperty] private string _editTagsString = string.Empty;
     [ObservableProperty] private FlowDesk.Core.Enums.TaskStatus _editStatus;
     [ObservableProperty] private TaskPriority _editPriority;
     [ObservableProperty] private System.Guid? _editProjectId;
+    [ObservableProperty] private System.DateTime? _editDueDate;
 
     [RelayCommand]
     private void OpenTaskDetail(TaskItem task)
@@ -131,6 +206,10 @@ public partial class TasksViewModel : ViewModelBase
         EditStatus = task.Status;
         EditPriority = task.Priority;
         EditProjectId = task.ProjectId;
+        EditDueDate = task.DueDate;
+        
+        EditTagsString = string.Join(", ", task.TaskTags?.Select(tt => tt.Tag?.Name) ?? System.Array.Empty<string>());
+        
         IsDetailOpen = true;
     }
 
@@ -142,19 +221,22 @@ public partial class TasksViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void SaveTaskDetails()
+    private async System.Threading.Tasks.Task SaveTaskDetailsAsync()
     {
-        if (SelectedTask == null || string.IsNullOrWhiteSpace(EditTitle)) return;
+        if (SelectedTask == null) return;
+        
+        SelectedTask.Title = EditTitle;
+        SelectedTask.Description = EditDescription;
+        SelectedTask.Status = EditStatus;
+        SelectedTask.Priority = EditPriority;
+        SelectedTask.DueDate = EditDueDate;
+        SelectedTask.ProjectId = EditProjectId;
+        SelectedTask.UpdatedAt = System.DateTime.UtcNow;
 
-        var updatedTask = _taskService.UpdateTask(
-            SelectedTask.Id,
-            EditTitle,
-            EditDescription,
-            EditStatus,
-            EditPriority,
-            SelectedTask.DueDate,
-            EditProjectId
-        );
+        await _dataSource.UpdateTaskAsync(SelectedTask);
+        await _dataSource.UpdateTaskTagsAsync(SelectedTask.Id, EditTagsString);
+        
+        var updatedTask = await _dataSource.GetTaskAsync(SelectedTask.Id);
 
         if (updatedTask != null)
         {
@@ -162,20 +244,30 @@ public partial class TasksViewModel : ViewModelBase
             if (index >= 0)
             {
                 Tasks[index] = updatedTask;
+                SelectedTask = updatedTask;
                 ApplyFilter();
-                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Task saved."));
             }
         }
 
-        CloseTaskDetail();
+        IsDetailOpen = false;
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Task updated."));
     }
+
+    public System.Windows.Input.ICommand? NewCommand => OpenAddModalCommand;
+    public System.Windows.Input.ICommand? SaveCommand => IsAddOpen ? CreateTaskCommand : (IsDetailOpen ? SaveTaskDetailsCommand : null);
+    public System.Windows.Input.ICommand? SearchCommand => null;
+    public System.Windows.Input.ICommand? CloseCommand => IsAddOpen ? CloseAddModalCommand : (IsDeleteConfirmOpen ? CancelDeleteCommand : (IsDetailOpen ? CloseTaskDetailCommand : null));
 
     [ObservableProperty]
     private bool _isDeleteConfirmOpen;
 
     [RelayCommand]
-    private void ConfirmDelete()
+    private void ConfirmDelete(TaskItem? task = null)
     {
+        if (task != null)
+        {
+            SelectedTask = task;
+        }
         IsDeleteConfirmOpen = true;
     }
 
@@ -186,11 +278,11 @@ public partial class TasksViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ExecuteDelete()
+    private async System.Threading.Tasks.Task ExecuteDeleteAsync()
     {
         if (SelectedTask != null)
         {
-            _taskService.DeleteTask(SelectedTask.Id);
+            await _dataSource.DeleteTaskAsync(SelectedTask.Id);
             Tasks.Remove(SelectedTask);
             ApplyFilter();
             CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Task deleted."));

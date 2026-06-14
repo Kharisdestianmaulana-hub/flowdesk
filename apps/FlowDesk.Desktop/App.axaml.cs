@@ -41,8 +41,17 @@ public partial class App : Avalonia.Application
             // Initialize database
             using (var db = new Infrastructure.Data.FlowDeskDbContext())
             {
-                db.Database.EnsureCreated();
+                Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(db.Database);
             }
+
+            // Apply theme
+            var settings = new Infrastructure.Services.LocalSettingsService().LoadSettings();
+            Avalonia.Application.Current.RequestedThemeVariant = settings.ThemePreference switch
+            {
+                "Light" => Avalonia.Styling.ThemeVariant.Light,
+                "Dark" => Avalonia.Styling.ThemeVariant.Dark,
+                _ => Avalonia.Styling.ThemeVariant.Default
+            };
 
             desktop.MainWindow = new MainWindow
             {

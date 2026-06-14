@@ -17,4 +17,10 @@ public partial class WelcomeViewModel : ViewModelBase
     {
         _mainViewModel.NavigateTo(new CreatePrivateWorkspaceViewModel(_mainViewModel));
     }
+
+    [RelayCommand]
+    private void ChooseLocalMode()
+    {
+        _mainViewModel.NavigateTo(new LocalWorkspaceSelectionViewModel(_mainViewModel));
+    }
 }

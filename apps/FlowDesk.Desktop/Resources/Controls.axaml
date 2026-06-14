@@ -75,4 +75,32 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource FocusBrush}"/>
     </Style>
+
+    <!-- Table Row Hover Style -->
+    <Style Selector="Border.TableRow">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.TableRow:pointerover">
+        <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}"/>
+    </Style>
+
+    <!-- Modal Overlay Style -->
+    <Style Selector="Grid.ModalOverlay">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="QuadraticEaseOut"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Grid.ModalOverlay[IsVisible=True]">
+        <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector="Grid.ModalOverlay[IsVisible=False]">
+        <Setter Property="Opacity" Value="0"/>
+    </Style>
 </Styles>

@@ -1,12 +1,12 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Brand & Accent -->
-    <Color x:Key="ColorPrimary">#0066CC</Color>
-    <Color x:Key="ColorPrimaryHover">#005BB8</Color>
-    <Color x:Key="ColorPrimaryPressed">#004A99</Color>
-    <Color x:Key="ColorPrimarySubtle">#EAF3FF</Color>
-    <Color x:Key="ColorPrimarySoft">#F3F8FF</Color>
-    <Color x:Key="ColorFocus">#0071E3</Color>
+    <!-- Brand & Accent (AppFlowy Violet) -->
+    <Color x:Key="ColorPrimary">#7C3AED</Color>
+    <Color x:Key="ColorPrimaryHover">#6D28D9</Color>
+    <Color x:Key="ColorPrimaryPressed">#5B21B6</Color>
+    <Color x:Key="ColorPrimarySubtle">#F5F3FF</Color>
+    <Color x:Key="ColorPrimarySoft">#EDE9FE</Color>
+    <Color x:Key="ColorFocus">#8B5CF6</Color>
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource ColorPrimary}"/>
     <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource ColorPrimaryHover}"/>
@@ -15,17 +15,17 @@
     <SolidColorBrush x:Key="PrimarySoftBrush" Color="{StaticResource ColorPrimarySoft}"/>
     <SolidColorBrush x:Key="FocusBrush" Color="{StaticResource ColorFocus}"/>
     
-    <!-- Status Colors -->
-    <Color x:Key="ColorSuccess">#248A3D</Color>
-    <Color x:Key="ColorSuccessSubtle">#EAF7EE</Color>
-    <Color x:Key="ColorWarning">#B76E00</Color>
-    <Color x:Key="ColorWarningSubtle">#FFF4DE</Color>
-    <Color x:Key="ColorDanger">#D70015</Color>
-    <Color x:Key="ColorDangerSubtle">#FFE8EA</Color>
-    <Color x:Key="ColorInfo">#0066CC</Color>
-    <Color x:Key="ColorInfoSubtle">#EAF3FF</Color>
-    <Color x:Key="ColorNeutral">#6E6E73</Color>
-    <Color x:Key="ColorNeutralSubtle">#F0F0F2</Color>
+    <!-- Status Colors (Pastel Vibrant) -->
+    <Color x:Key="ColorSuccess">#34D399</Color>
+    <Color x:Key="ColorSuccessSubtle">#ECFDF5</Color>
+    <Color x:Key="ColorWarning">#FBBF24</Color>
+    <Color x:Key="ColorWarningSubtle">#FFFBEB</Color>
+    <Color x:Key="ColorDanger">#FB7185</Color>
+    <Color x:Key="ColorDangerSubtle">#FFF1F2</Color>
+    <Color x:Key="ColorInfo">#38BDF8</Color>
+    <Color x:Key="ColorInfoSubtle">#F0F9FF</Color>
+    <Color x:Key="ColorNeutral">#9CA3AF</Color>
+    <Color x:Key="ColorNeutralSubtle">#F3F4F6</Color>
 
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource ColorSuccess}"/>
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource ColorWarning}"/>

@@ -17,7 +17,7 @@ public class TaskService
         return db.Tasks.OrderByDescending(t => t.CreatedAt).ToList();
     }
 
-    public TaskItem CreateTask(string title, Guid? projectId, FlowDesk.Core.Enums.TaskStatus status, TaskPriority priority)
+    public TaskItem CreateTask(string title, Guid? projectId, FlowDesk.Core.Enums.TaskStatus status, TaskPriority priority, DateTime? dueDate = null)
     {
         using var db = new FlowDeskDbContext();
         var user = db.LocalUsers.FirstOrDefault();
@@ -29,6 +29,7 @@ public class TaskService
             ProjectId = projectId,
             Status = status,
             Priority = priority,
+            DueDate = dueDate,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

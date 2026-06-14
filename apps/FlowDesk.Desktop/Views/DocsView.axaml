@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:FlowDesk.Desktop.ViewModels"
              x:Class="FlowDesk.Desktop.Views.DocsView"
-             x:DataType="vm:DocsViewModel">
+             x:DataType="vm:DocsViewModel"
+             x:Name="Root">
 
     <Grid ColumnDefinitions="300, 1, *" Margin="{StaticResource Spacing8}">
         <!-- Sidebar: Document List -->
@@ -14,10 +15,20 @@
 
             <TextBox Text="{Binding SearchQuery}" Classes="FlowDesk" PlaceholderText="Search docs..." Margin="0"/>
             
+            <Grid ColumnDefinitions="*, *" Margin="0,0,0,8">
+                <Button Grid.Column="0" Content="Sort: Title" Command="{Binding SortCommand}" CommandParameter="Title" Background="Transparent" BorderThickness="0" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Left" FontSize="{StaticResource FontSizeCaption}"/>
+                <Button Grid.Column="1" Content="Sort: Date" Command="{Binding SortCommand}" CommandParameter="UpdatedAt" Background="Transparent" BorderThickness="0" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" FontSize="{StaticResource FontSizeCaption}"/>
+            </Grid>
+
             <ListBox ItemsSource="{Binding FilteredDocuments}" SelectedItem="{Binding SelectedDocument}" Background="Transparent" BorderThickness="0">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Spacing3}" Margin="0,0,0,8">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Delete Document..." Command="{Binding #Root.((vm:DocsViewModel)DataContext).ConfirmDeleteCommand}" CommandParameter="{Binding}" Foreground="Red" />
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <StackPanel>
                                 <TextBlock Text="{Binding Title}" FontWeight="{StaticResource FontWeightMedium}"/>
                                 <TextBlock Text="{Binding UpdatedAt, StringFormat='g'}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}"/>
@@ -54,7 +65,29 @@
                 </StackPanel>
 
                 <Border Background="{DynamicResource BorderSoftBrush}" Height="1"/>
-                <TextBox Text="{Binding EditContent}" AcceptsReturn="True" TextWrapping="Wrap" Classes="FlowDesk" BorderThickness="0" Background="Transparent" MinHeight="400" VerticalAlignment="Stretch"/>
+                
+                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,8">
+                    <TextBlock Grid.Column="0" Text="Editor" VerticalAlignment="Center" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !IsPreviewMode}"/>
+                    <TextBlock Grid.Column="0" Text="Preview" VerticalAlignment="Center" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding IsPreviewMode}"/>
+                    
+                    <Button Grid.Column="1" 
+                            Command="{Binding TogglePreviewModeCommand}" 
+                            Classes="Secondary" Padding="12,6">
+                        <Button.Content>
+                            <Panel>
+                                <TextBlock Text="Preview" IsVisible="{Binding !IsPreviewMode}"/>
+                                <TextBlock Text="Edit" IsVisible="{Binding IsPreviewMode}"/>
+                            </Panel>
+                        </Button.Content>
+                    </Button>
+                </Grid>
+
+                <Grid VerticalAlignment="Stretch">
+                    <TextBox Text="{Binding EditContent}" AcceptsReturn="True" TextWrapping="Wrap" Classes="FlowDesk" BorderThickness="0" Background="Transparent" MinHeight="400" VerticalAlignment="Stretch" IsVisible="{Binding !IsPreviewMode}"/>
+                    <ScrollViewer IsVisible="{Binding IsPreviewMode}">
+                        <TextBlock Text="{Binding EditContent}" TextWrapping="Wrap" MinHeight="400" VerticalAlignment="Stretch"/>
+                    </ScrollViewer>
+                </Grid>
             </StackPanel>
         </Border>
 
@@ -68,7 +101,7 @@
         </Border>
 
         <!-- Delete Confirmation Modal -->
-        <Grid Grid.ColumnSpan="3" Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}">
+        <Grid Classes="ModalOverlay" Grid.ColumnSpan="3" Background="#66000000" IsVisible="{Binding IsDeleteConfirmOpen}">
             <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
                 <StackPanel Spacing="24">
                     <StackPanel Spacing="8">

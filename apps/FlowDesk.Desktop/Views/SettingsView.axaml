@@ -4,45 +4,146 @@
              x:Class="FlowDesk.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-    <ScrollViewer>
-        <StackPanel Margin="{StaticResource Spacing8}" Spacing="32" MaxWidth="600" HorizontalAlignment="Center">
-            <TextBlock Text="Settings" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="{StaticResource Spacing8}" Spacing="24" MaxWidth="800" HorizontalAlignment="Center">
+                <TextBlock Text="Settings" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
 
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
-                <StackPanel Spacing="24">
-                    <TextBlock Text="General Profile" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
-                    
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Workspace Name" FontWeight="{StaticResource FontWeightMedium}"/>
-                        <TextBox Text="{Binding WorkspaceName}" Classes="FlowDesk"/>
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                    <StackPanel Spacing="24">
+                        <TextBlock Text="Workspace Settings" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Workspace Name" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <TextBox Text="{Binding WorkspaceName}" Classes="FlowDesk" Width="300" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Your Name" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <TextBox Text="{Binding UserName}" Classes="FlowDesk" Width="300" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Theme" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <ComboBox ItemsSource="{Binding AvailableThemes}" SelectedItem="{Binding SelectedTheme}" Width="300" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="App Zoom" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <ComboBox ItemsSource="{Binding AvailableZoomOptions}" SelectedItem="{Binding SelectedZoomOption}" Width="150" HorizontalAlignment="Left"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsCustomZoomVisible}">
+                                    <TextBox Text="{Binding CustomZoomText}" Classes="FlowDesk" Width="60"/>
+                                    <TextBlock Text="%" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button Content="Save Changes" Command="{Binding SaveSettingsCommand}" Classes="Primary" HorizontalAlignment="Left" Margin="0,8,0,0"/>
                     </StackPanel>
+                </Border>
 
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Your Name" FontWeight="{StaticResource FontWeightMedium}"/>
-                        <TextBox Text="{Binding UserName}" Classes="FlowDesk"/>
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" IsVisible="{Binding IsHostSettingsVisible}">
+                    <StackPanel Spacing="24">
+                        <TextBlock Text="Local Workspace Network (Preview)" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Host This Workspace" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <ToggleSwitch IsChecked="{Binding AllowLanAccess}" Content="Allow LAN Access" OnContent="Enabled" OffContent="Disabled" IsEnabled="{Binding !IsLocalServerRunning}"/>
+                            <Button Content="Toggle Local Server" Command="{Binding ToggleServerCommand}" Classes="Primary"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8" IsVisible="{Binding IsLocalServerRunning}">
+                            <TextBlock Text="Host IP" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <TextBox Text="{Binding LocalServerUrl}" Classes="FlowDesk" IsReadOnly="True" Foreground="{DynamicResource TextMutedBrush}"/>
+                            
+                            <TextBlock Text="Temporary Join Code" FontWeight="{StaticResource FontWeightMedium}" Margin="0,8,0,0"/>
+                            <TextBox Text="{Binding JoinCode}" Classes="FlowDesk" IsReadOnly="True" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </StackPanel>
+
+                        <Separator Background="{DynamicResource BorderSoftBrush}" Margin="0,8"/>
+
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Join Remote Workspace" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Host IP" FontWeight="{StaticResource FontWeightMedium}"/>
+                                <TextBox Text="{Binding JoinHostUrl}" Classes="FlowDesk" PlaceholderText="e.g. 192.168.1.15"/>
+                            </StackPanel>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Join Code" FontWeight="{StaticResource FontWeightMedium}"/>
+                                <TextBox Text="{Binding JoinHostCode}" Classes="FlowDesk" Watermark="e.g. 49A2B"/>
+                            </StackPanel>
+                            <Button Content="Connect" Command="{Binding ConnectToWorkspaceCommand}" Classes="Secondary" HorizontalAlignment="Left"/>
+                        </StackPanel>
                     </StackPanel>
+                </Border>
 
-                    <Button Content="Save Changes" Command="{Binding SaveSettingsCommand}" Classes="Primary" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                    <StackPanel Spacing="24">
+                        <TextBlock Text="App Information" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Version" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <TextBlock Text="{Binding AppVersion}" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                    <StackPanel Spacing="24">
+                        <TextBlock Text="Data Storage &amp; Backup" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Local Data Location" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <TextBox Text="{Binding DataFolderLocation}" Classes="FlowDesk" IsReadOnly="True" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </StackPanel>
+
+                        <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="Open Data Folder" Command="{Binding OpenDataFolderCommand}" Classes="Secondary" Margin="0,0,16,16"/>
+                            <Button Content="Open Backup Folder" Command="{Binding OpenBackupFolderCommand}" Classes="Secondary" Margin="0,0,16,16"/>
+                            <Button Content="Create Manual Backup" Command="{Binding CreateManualBackupCommand}" Classes="Secondary" Margin="0,0,16,16"/>
+                            <Button Content="Export Workspace (.zip)" Command="{Binding ExportWorkspaceCommand}" Classes="Primary" Margin="0,0,16,16"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" IsVisible="{Binding IsLeaveWorkspaceVisible}">
+                    <StackPanel Spacing="24">
+                        <TextBlock Text="Danger Zone" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}" Foreground="#E74C3C"/>
+                        
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Leave Workspace" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <TextBlock Text="This action will delete all local data associated with this workspace. If this is a Private Workspace, your data will be permanently deleted." Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <Button Content="Leave Workspace" Command="{Binding LeaveWorkspaceCommand}" Classes="Primary" Background="#E74C3C" Foreground="White" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Grid Classes="ModalOverlay" Background="#66000000" IsVisible="{Binding IsLoading}">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="300" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
+                <StackPanel Spacing="16" HorizontalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Margin="0,8,0,0"/>
+                    <TextBlock Text="{Binding LoadingMessage}" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightMedium}" Foreground="{DynamicResource InkBrush}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
+        </Grid>
 
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+        <!-- Leave Workspace Confirmation Dialog -->
+        <Grid Classes="ModalOverlay" Background="#66000000" IsVisible="{Binding IsLeaveConfirmationVisible}">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
                 <StackPanel Spacing="24">
-                    <TextBlock Text="Data Storage &amp; Backup" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
-                    
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Local Data Location" FontWeight="{StaticResource FontWeightMedium}"/>
-                        <TextBox Text="{Binding DataFolderLocation}" Classes="FlowDesk" IsReadOnly="True" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <TextBlock Text="Are you absolutely sure?" FontSize="{StaticResource FontSizeSectionTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+                    <TextBlock Text="This action will delete all local configuration and data associated with this workspace. If this is a Private Workspace, your data will be permanently lost." TextWrapping="Wrap" Foreground="{DynamicResource TextMutedBrush}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Right">
+                        <Button Content="Cancel" Command="{Binding CancelLeaveWorkspaceCommand}" Classes="Secondary"/>
+                        <Button Content="Yes, Leave Workspace" Command="{Binding ConfirmLeaveWorkspaceCommand}" Classes="Primary" Background="#E74C3C" Foreground="White"/>
                     </StackPanel>
-
-                    <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <Button Content="Open Data Folder" Command="{Binding OpenDataFolderCommand}" Classes="Secondary" Margin="0,0,16,16"/>
-                        <Button Content="Open Backup Folder" Command="{Binding OpenBackupFolderCommand}" Classes="Secondary" Margin="0,0,16,16"/>
-                        <Button Content="Create Manual Backup" Command="{Binding CreateManualBackupCommand}" Classes="Secondary" Margin="0,0,16,16"/>
-                        <Button Content="Export Workspace (.zip)" Command="{Binding ExportWorkspaceCommand}" Classes="Primary" Margin="0,0,16,16"/>
-                    </WrapPanel>
                 </StackPanel>
             </Border>
-        </StackPanel>
-    </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>

@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.JoinWorkspaceView"
+             x:DataType="vm:JoinWorkspaceViewModel">
+
+    <Grid>
+        <Button Content="← Back" Command="{Binding CancelCommand}" Classes="Secondary" 
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="{StaticResource Spacing6}"/>
+                
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24" Width="420">
+            
+            <TextBlock Text="Join Workspace" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
+
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}">
+                <StackPanel Spacing="16">
+                    
+                    <TextBlock Text="Discovered Workspaces on your Network" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextMutedBrush}"/>
+                    
+                    <TextBox Text="{Binding SearchQuery}" Classes="FlowDesk" PlaceholderText="Search workspace..." Margin="0,0,0,8"/>
+
+                    <ItemsControl ItemsSource="{Binding FilteredWorkspaces}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceVariantBrush}" 
+                                        CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <Border Width="40" Height="40" CornerRadius="8" Background="{DynamicResource PrimaryBrush}" Grid.Column="0">
+                                            <PathIcon Data="{StaticResource ProjectIcon}" Foreground="White" Width="20" Height="20"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding WorkspaceName}" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="16"/>
+                                            <TextBlock Text="{Binding HostUrl}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Classes="Primary" Content="Join" 
+                                                Command="{Binding $parent[UserControl].((vm:JoinWorkspaceViewModel)DataContext).JoinWorkspaceCommand}" 
+                                                CommandParameter="{Binding}"
+                                                VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <StackPanel Spacing="8" Margin="0,16,0,0">
+                        <TextBlock Text="Your Name" FontSize="{StaticResource FontSizeUI}" FontWeight="{StaticResource FontWeightSemiBold}"/>
+                        <TextBox Text="{Binding UserName}" IsEnabled="{Binding !IsLoading}" Classes="FlowDesk" PlaceholderText="e.g. John Doe"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding IsLoading}" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" Margin="0,8"/>
+
+                    <Grid ColumnDefinitions="*, *" Margin="0,16,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding !IsLoading}" Classes="Secondary" HorizontalAlignment="Stretch"/>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </Grid>
+
+</UserControl>

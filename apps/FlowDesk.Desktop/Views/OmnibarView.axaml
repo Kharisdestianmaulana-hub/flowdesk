@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FlowDesk.Desktop.ViewModels"
+             x:Class="FlowDesk.Desktop.Views.OmnibarView"
+             x:DataType="vm:OmnibarViewModel"
+             x:Name="Root">
+
+    <Grid Classes="ModalOverlay" Background="#99000000" IsVisible="{Binding IsOpen}" ZIndex="1000">
+        <!-- Clicking outside closes the modal -->
+        <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Command="{Binding CloseCommand}" CornerRadius="0"/>
+
+        <!-- Main Modal Container -->
+        <Border Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderSoftBrush}" 
+                BorderThickness="1" 
+                CornerRadius="{StaticResource RadiusLg}" 
+                Width="600" 
+                MaxHeight="500"
+                VerticalAlignment="Top" 
+                Margin="0,100,0,0"
+                BoxShadow="0 16 48 0 #44000000">
+            
+            <Grid RowDefinitions="Auto, *">
+                <!-- Search Input Area -->
+                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="16">
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                        <PathIcon Grid.Column="0" Data="{StaticResource search_regular}" Foreground="{DynamicResource TextMutedBrush}" Width="20" Height="20" Margin="0,0,12,0"/>
+                        
+                        <TextBox Grid.Column="1" 
+                                 Text="{Binding SearchQuery}" 
+                                 PlaceholderText="Search projects, tasks, docs... (Cmd+K)" 
+                                 Classes="FlowDesk"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FontSize="16"
+                                 x:Name="SearchBox"/>
+                                 
+                        <ProgressBar Grid.Column="2" IsIndeterminate="True" IsVisible="{Binding IsLoading}" Width="20" Height="20" Margin="12,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Results Area -->
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Results}" Margin="8">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Background="Transparent" 
+                                            BorderThickness="0" 
+                                            Padding="12,8" 
+                                            Margin="0,2"
+                                            HorizontalAlignment="Stretch" 
+                                            HorizontalContentAlignment="Left"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            Command="{Binding #Root.((vm:OmnibarViewModel)DataContext).SelectResultCommand}" 
+                                            CommandParameter="{Binding}">
+                                        
+                                        <Grid ColumnDefinitions="Auto, *">
+                                            <Border Grid.Column="0" Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="{StaticResource RadiusSm}" Padding="6,4" Margin="0,0,12,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Type}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextBrush}"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{DynamicResource InkBrush}" FontSize="14"/>
+                                                <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Empty State -->
+                        <TextBlock Text="No results found." 
+                                   IsVisible="{Binding !Results.Count}" 
+                                   Foreground="{DynamicResource TextMutedBrush}" 
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,32"
+                                   x:CompileBindings="False">
+                            <TextBlock.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="!IsLoading"/>
+                                    <Binding Path="SearchQuery" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+                                    <Binding Path="!Results.Count"/>
+                                </MultiBinding>
+                            </TextBlock.IsVisible>
+                        </TextBlock>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

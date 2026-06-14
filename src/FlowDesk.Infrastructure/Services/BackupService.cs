@@ -15,7 +15,10 @@ public class BackupService
 
     public BackupService()
     {
-        _dataFolder = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FlowDeskData");
+        var customPath = Environment.GetEnvironmentVariable("FLOWDESK_DATA_DIR");
+        _dataFolder = string.IsNullOrWhiteSpace(customPath) 
+            ? Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FlowDeskData")
+            : customPath;
         _dbPath = Path.Join(_dataFolder, "flowdesk.db");
         _autoBackupFolder = Path.Join(_dataFolder, "backups", "auto");
         _manualBackupFolder = Path.Join(_dataFolder, "backups", "manual");

@@ -9,9 +9,9 @@ using System.Linq;
 
 namespace FlowDesk.Desktop.ViewModels;
 
-public partial class ProjectsViewModel : ViewModelBase
+public partial class ProjectsViewModel : ViewModelBase, IPageCommands
 {
-    private readonly ProjectService _projectService = new();
+    private readonly FlowDesk.Core.Interfaces.IDataSource _dataSource = FlowDesk.Desktop.Services.DataSourceProvider.Current;
 
     [ObservableProperty]
     private ObservableCollection<Project> _projects = new();
@@ -21,6 +21,12 @@ public partial class ProjectsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string _sortBy = "Name";
+
+    [ObservableProperty]
+    private bool _sortAscending = true;
 
     public bool IsEmpty => FilteredProjects.Count == 0;
 
@@ -38,12 +44,15 @@ public partial class ProjectsViewModel : ViewModelBase
     public ProjectsViewModel(MainViewModel mainViewModel)
     {
         _mainViewModel = mainViewModel;
-        LoadProjects();
+        _ = LoadProjectsAsync();
     }
 
-    private void LoadProjects()
+    private async System.Threading.Tasks.Task LoadProjectsAsync()
     {
-        var dbProjects = _projectService.GetProjects();
+        var dbProjects = await _dataSource.GetProjectsAsync();
+        // Sort descending locally to match previous behavior
+        dbProjects = dbProjects.OrderByDescending(p => p.CreatedAt).ToList();
+        
         Projects = new ObservableCollection<Project>(dbProjects);
         ApplyFilter();
     }
@@ -68,7 +77,33 @@ public partial class ProjectsViewModel : ViewModelBase
             );
             FilteredProjects = new ObservableCollection<Project>(filtered);
         }
+
+        // Apply Sorting
+        var sorted = SortBy switch
+        {
+            "Status" => SortAscending ? FilteredProjects.OrderBy(p => p.Status) : FilteredProjects.OrderByDescending(p => p.Status),
+            "UpdatedAt" => SortAscending ? FilteredProjects.OrderBy(p => p.UpdatedAt) : FilteredProjects.OrderByDescending(p => p.UpdatedAt),
+            "DueDate" => SortAscending ? FilteredProjects.OrderBy(p => p.DueDate ?? System.DateTime.MaxValue) : FilteredProjects.OrderByDescending(p => p.DueDate ?? System.DateTime.MinValue),
+            _ => SortAscending ? FilteredProjects.OrderBy(p => p.Name) : FilteredProjects.OrderByDescending(p => p.Name)
+        };
+
+        FilteredProjects = new ObservableCollection<Project>(sorted);
         OnPropertyChanged(nameof(IsEmpty));
+    }
+
+    [RelayCommand]
+    private void Sort(string columnName)
+    {
+        if (SortBy == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortBy = columnName;
+            SortAscending = true;
+        }
+        ApplyFilter();
     }
 
     [RelayCommand]
@@ -86,16 +121,21 @@ public partial class ProjectsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CreateProject()
+    private async System.Threading.Tasks.Task CreateProjectAsync()
     {
         if (string.IsNullOrWhiteSpace(NewProjectName)) return;
 
-        var project = _projectService.CreateProject(
-            NewProjectName, 
-            NewProjectDescription, 
-            ProjectStatus.Planning, 
-            ProjectType.General
-        );
+        var newProject = new Project
+        {
+            Name = NewProjectName,
+            Description = NewProjectDescription,
+            Status = ProjectStatus.Planning,
+            Type = ProjectType.General,
+            CreatedAt = System.DateTime.UtcNow,
+            UpdatedAt = System.DateTime.UtcNow
+        };
+
+        var project = await _dataSource.CreateProjectAsync(newProject);
 
         Projects.Insert(0, project);
         ApplyFilter();
@@ -112,4 +152,46 @@ public partial class ProjectsViewModel : ViewModelBase
             _mainViewModel.ChangeView(new ProjectDetailViewModel(project, _mainViewModel));
         }
     }
+
+    [ObservableProperty]
+    private bool _isDeleteConfirmOpen;
+
+    [ObservableProperty]
+    private Project? _selectedProjectForDelete;
+
+    [RelayCommand]
+    private void ConfirmDelete(Project project)
+    {
+        SelectedProjectForDelete = project;
+        IsDeleteConfirmOpen = true;
+    }
+
+    [RelayCommand]
+    private void CancelDelete()
+    {
+        IsDeleteConfirmOpen = false;
+        SelectedProjectForDelete = null;
+    }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task ExecuteDeleteAsync()
+    {
+        if (SelectedProjectForDelete != null)
+        {
+            await _dataSource.DeleteProjectAsync(SelectedProjectForDelete.Id);
+            var projectToRemove = Projects.FirstOrDefault(p => p.Id == SelectedProjectForDelete.Id);
+            if (projectToRemove != null)
+            {
+                Projects.Remove(projectToRemove);
+            }
+            ApplyFilter();
+            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Project deleted."));
+        }
+        CancelDelete();
+    }
+
+    public System.Windows.Input.ICommand? NewCommand => OpenCreateModalCommand;
+    public System.Windows.Input.ICommand? SaveCommand => IsCreateModalOpen ? CreateProjectCommand : null;
+    public System.Windows.Input.ICommand? SearchCommand => null;
+    public System.Windows.Input.ICommand? CloseCommand => IsCreateModalOpen ? CloseCreateModalCommand : (IsDeleteConfirmOpen ? CancelDeleteCommand : null);
 }

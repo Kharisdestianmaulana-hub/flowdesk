@@ -14,8 +14,12 @@ public class FileService
 
     public FileService()
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        _filesDirectory = Path.Join(appData, "FlowDeskData", "Files");
+        var customPath = Environment.GetEnvironmentVariable("FLOWDESK_DATA_DIR");
+        var baseFolder = string.IsNullOrWhiteSpace(customPath) 
+            ? Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FlowDeskData")
+            : customPath;
+
+        _filesDirectory = Path.Join(baseFolder, "Files");
         
         if (!Directory.Exists(_filesDirectory))
         {

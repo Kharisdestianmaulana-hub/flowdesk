@@ -39,3 +39,4 @@ artifacts/
 # NuGet packages cache if generated locally
 packages/
 run_log.txt
+*.exe

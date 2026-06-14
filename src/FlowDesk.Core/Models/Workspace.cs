@@ -9,5 +9,8 @@ public class Workspace
     public string Name { get; set; } = string.Empty;
     public string? Type { get; set; }
     public WorkspaceMode Mode { get; set; } = WorkspaceMode.Private;
+    public string HostName { get; set; } = "Local Host";
+    public string? HostUrl { get; set; }
+    public string? JoinCode { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

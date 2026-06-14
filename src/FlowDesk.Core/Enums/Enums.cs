@@ -4,7 +4,8 @@ public enum WorkspaceMode
 {
     Private,
     Local,
-    Server
+    Server,
+    Joined
 }
 
 public enum ProjectStatus

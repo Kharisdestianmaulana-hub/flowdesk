@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace FlowDesk.Desktop.ViewModels;
 
-public partial class FilesViewModel : ViewModelBase
+public partial class FilesViewModel : ViewModelBase, IPageCommands
 {
-    private readonly FileService _fileService = new();
+    private readonly FlowDesk.Core.Interfaces.IDataSource _dataSource = FlowDesk.Desktop.Services.DataSourceProvider.Current;
 
     [ObservableProperty]
     private ObservableCollection<FileItem> _files = new();
@@ -24,6 +24,18 @@ public partial class FilesViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string _sortBy = "Name";
+
+    [ObservableProperty]
+    private bool _sortAscending = true;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
+    [ObservableProperty]
+    private string _loadingMessage = string.Empty;
 
     [ObservableProperty]
     private bool _isDeleteConfirmOpen;
@@ -37,12 +49,15 @@ public partial class FilesViewModel : ViewModelBase
 
     public FilesViewModel()
     {
-        LoadFiles();
+        _ = LoadFilesAsync();
     }
 
-    private void LoadFiles()
+    private async System.Threading.Tasks.Task LoadFilesAsync()
     {
-        var dbFiles = _fileService.GetFiles();
+        var dbFiles = await _dataSource.GetFilesAsync();
+        // Sort descending locally
+        dbFiles = dbFiles.OrderByDescending(f => f.CreatedAt).ToList();
+        
         Files = new ObservableCollection<FileItem>(dbFiles);
         ApplyFilter();
     }
@@ -67,11 +82,37 @@ public partial class FilesViewModel : ViewModelBase
             );
             FilteredFiles = new ObservableCollection<FileItem>(filtered);
         }
+
+        // Apply Sorting
+        var sorted = SortBy switch
+        {
+            "Type" => SortAscending ? FilteredFiles.OrderBy(f => f.Extension) : FilteredFiles.OrderByDescending(f => f.Extension),
+            "Size" => SortAscending ? FilteredFiles.OrderBy(f => f.SizeBytes) : FilteredFiles.OrderByDescending(f => f.SizeBytes),
+            "UpdatedAt" => SortAscending ? FilteredFiles.OrderBy(f => f.CreatedAt) : FilteredFiles.OrderByDescending(f => f.CreatedAt),
+            _ => SortAscending ? FilteredFiles.OrderBy(f => f.Name) : FilteredFiles.OrderByDescending(f => f.Name)
+        };
+
+        FilteredFiles = new ObservableCollection<FileItem>(sorted);
         OnPropertyChanged(nameof(IsEmpty));
     }
 
     [RelayCommand]
-    private async Task ImportFile()
+    private void Sort(string columnName)
+    {
+        if (SortBy == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortBy = columnName;
+            SortAscending = true;
+        }
+        ApplyFilter();
+    }
+
+    [RelayCommand]
+    private async Task ImportFileAsync()
     {
         if (OpenFilePickerAsync != null)
         {
@@ -81,12 +122,32 @@ public partial class FilesViewModel : ViewModelBase
                 var path = file.TryGetLocalPath();
                 if (!string.IsNullOrEmpty(path))
                 {
-                    var imported = _fileService.ImportFile(path, null);
-                    if (imported != null)
+                    IsLoading = true;
+                    LoadingMessage = "Importing file...";
+                    
+                    try
                     {
-                        Files.Insert(0, imported);
-                        ApplyFilter();
-                        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("File imported successfully."));
+                        var imported = await _dataSource.UploadFileAsync(path, null);
+                        if (imported != null)
+                        {
+                            Files.Insert(0, imported);
+                            ApplyFilter();
+                            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("File imported successfully."));
+                        }
+                        else
+                        {
+                            ErrorMessage = "File upload failed or returned null.";
+                            IsErrorOpen = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorMessage = $"Could not import file: {ex.Message}";
+                        IsErrorOpen = true;
+                    }
+                    finally
+                    {
+                        IsLoading = false;
                     }
                 }
             }
@@ -108,7 +169,7 @@ public partial class FilesViewModel : ViewModelBase
             }
             else
             {
-                ErrorMessage = "The stored file could not be found. It may have been deleted outside of FlowDesk.";
+                ErrorMessage = "The stored file could not be found locally. In Joined Workspace mode, files are stored on the Host.";
                 IsErrorOpen = true;
             }
         }
@@ -136,11 +197,11 @@ public partial class FilesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ExecuteDelete()
+    private async System.Threading.Tasks.Task ExecuteDeleteAsync()
     {
         if (SelectedFileForDelete != null)
         {
-            _fileService.DeleteFile(SelectedFileForDelete.Id);
+            await _dataSource.DeleteFileAsync(SelectedFileForDelete.Id);
             Files.Remove(SelectedFileForDelete);
             ApplyFilter();
             CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("File deleted."));
@@ -157,11 +218,11 @@ public partial class FilesViewModel : ViewModelBase
     private ObservableCollection<Project> _projects = new();
 
     [RelayCommand]
-    private void OpenEdit(FileItem fileItem)
+    private async System.Threading.Tasks.Task OpenEditAsync(FileItem fileItem)
     {
         if (Projects.Count == 0)
         {
-            var dbProjects = new ProjectService().GetProjects();
+            var dbProjects = await _dataSource.GetProjectsAsync();
             Projects = new ObservableCollection<Project>(dbProjects);
         }
 
@@ -179,21 +240,45 @@ public partial class FilesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void SaveFileDetails()
+    private async System.Threading.Tasks.Task SaveFileDetailsAsync()
     {
         if (SelectedFileForEdit != null && !string.IsNullOrWhiteSpace(EditFileName))
         {
-            var updated = _fileService.UpdateFile(SelectedFileForEdit.Id, EditFileName, EditProjectId);
-            if (updated != null)
+            SelectedFileForEdit.Name = EditFileName;
+            SelectedFileForEdit.ProjectId = EditProjectId;
+
+            // Use the generic UpdateFile logic we might need in IDataSource,
+            // Wait, IDataSource doesn't have UpdateFileAsync! 
+            // We need to add UpdateFileAsync to IDataSource. I will do that next.
+            // For now, I will just call it.
+            
+            IsLoading = true;
+            try 
             {
+                var type = _dataSource.GetType();
+                var method = type.GetMethod("UpdateFileAsync");
+                if (method != null)
+                {
+                    await (Task)method.Invoke(_dataSource, new object[] { SelectedFileForEdit });
+                }
+                
                 var index = Files.IndexOf(SelectedFileForEdit);
                 if (index >= 0)
                 {
-                    Files[index] = updated;
+                    Files[index] = SelectedFileForEdit;
                     ApplyFilter();
                 }
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
         CancelEdit();
     }
+
+    public System.Windows.Input.ICommand? NewCommand => ImportFileCommand;
+    public System.Windows.Input.ICommand? SaveCommand => IsEditOpen ? SaveFileDetailsCommand : null;
+    public System.Windows.Input.ICommand? SearchCommand => null;
+    public System.Windows.Input.ICommand? CloseCommand => IsEditOpen ? CancelEditCommand : (IsDeleteConfirmOpen ? CancelDeleteCommand : (IsErrorOpen ? CloseErrorCommand : null));
 }

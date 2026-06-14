@@ -4,26 +4,56 @@
              x:Class="FlowDesk.Desktop.Views.DashboardView"
              x:DataType="vm:DashboardViewModel">
 
-    <ScrollViewer>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
             <TextBlock Text="Home" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}"/>
             
-            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto" Margin="0,16,0,0">
-                <!-- My Tasks -->
-                <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="0,0,8,0">
+            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" Margin="0,16,0,0">
+                <!-- Row 0: Tasks and Projects -->
+                
+                <!-- Tasks Due Soon -->
+                <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="0,0,8,16" BoxShadow="0 4 12 0 #05000000">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="My Tasks" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Path Grid.Column="0" Data="{StaticResource CheckmarkIcon}" Fill="{DynamicResource PrimaryBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
+                            <TextBlock Grid.Column="1" Text="Active Tasks" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}" Foreground="{DynamicResource InkBrush}"/>
+                        </Grid>
                         
-                        <!-- Empty State -->
-                        <TextBlock Text="No pending tasks. You are all caught up!" Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasTasks}"/>
+                        <TextBlock Text="No active tasks. You are all caught up!" Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasTasks}" Margin="0,8"/>
                         
-                        <!-- Tasks List -->
-                        <ItemsControl ItemsSource="{Binding Tasks}" IsVisible="{Binding HasTasks}">
+                        <ItemsControl ItemsSource="{Binding TasksDueSoon}" IsVisible="{Binding HasTasks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                    <Border Classes="TableRow" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="8">
                                         <Grid ColumnDefinitions="*, Auto">
-                                            <TextBlock Grid.Column="0" Text="{Binding Title}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{Binding Title}" VerticalAlignment="Center" FontWeight="Medium" Foreground="{DynamicResource InkBrush}"/>
+                                            <Border Grid.Column="1" Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="{StaticResource RadiusXs}" Padding="6,2">
+                                                <TextBlock Text="{Binding DueDate, StringFormat='MMM dd'}" FontSize="11" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Recent Projects -->
+                <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="8,0,0,16" BoxShadow="0 4 12 0 #05000000">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Path Grid.Column="0" Data="{StaticResource ProjectIcon}" Fill="{DynamicResource SuccessBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
+                            <TextBlock Grid.Column="1" Text="Recent Projects" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}" Foreground="{DynamicResource InkBrush}"/>
+                        </Grid>
+                        
+                        <TextBlock Text="Create your first project to get started." Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasProjects}" Margin="0,8"/>
+                        
+                        <ItemsControl ItemsSource="{Binding RecentProjects}" IsVisible="{Binding HasProjects}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="TableRow" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="8">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource InkBrush}"/>
                                             <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
@@ -33,22 +63,53 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Active Projects -->
-                <Border Grid.Column="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="8,0,0,0">
+                <!-- Row 1: Docs and Files -->
+                
+                <!-- Recent Docs -->
+                <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="0,0,8,0" BoxShadow="0 4 12 0 #05000000">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Active Projects" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}"/>
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Path Grid.Column="0" Data="{StaticResource DocumentIcon}" Fill="{DynamicResource WarningBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
+                            <TextBlock Grid.Column="1" Text="Recent Docs" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}" Foreground="{DynamicResource InkBrush}"/>
+                        </Grid>
                         
-                        <!-- Empty State -->
-                        <TextBlock Text="Create your first project to get started." Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasProjects}"/>
+                        <TextBlock Text="No recent documents." Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasDocs}" Margin="0,8"/>
                         
-                        <!-- Projects List -->
-                        <ItemsControl ItemsSource="{Binding Projects}" IsVisible="{Binding HasProjects}">
+                        <ItemsControl ItemsSource="{Binding RecentDocs}" IsVisible="{Binding HasDocs}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                    <Border Classes="TableRow" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="8">
                                         <Grid ColumnDefinitions="*, Auto">
-                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="{StaticResource FontWeightMedium}" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{Binding Title}" VerticalAlignment="Center" FontWeight="Medium" Foreground="{DynamicResource InkBrush}"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding UpdatedAt, StringFormat='MMM dd'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Recent Files -->
+                <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing5}" Margin="8,0,0,0" BoxShadow="0 4 12 0 #05000000">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Path Grid.Column="0" Data="{StaticResource FileIcon}" Fill="{DynamicResource FocusBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
+                            <TextBlock Grid.Column="1" Text="Recent Files" FontWeight="{StaticResource FontWeightSemiBold}" FontSize="{StaticResource FontSizeSectionTitle}" Foreground="{DynamicResource InkBrush}"/>
+                        </Grid>
+                        
+                        <TextBlock Text="No recent files." Foreground="{DynamicResource TextMutedBrush}" IsVisible="{Binding !HasFiles}" Margin="0,8"/>
+                        
+                        <ItemsControl ItemsSource="{Binding RecentFiles}" IsVisible="{Binding HasFiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="TableRow" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="8">
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="{DynamicResource InkBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Extension}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding CreatedAt, StringFormat='MMM dd'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

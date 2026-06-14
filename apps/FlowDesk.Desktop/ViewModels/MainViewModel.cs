@@ -2,12 +2,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using System;
+using System.Linq;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FlowDesk.Desktop.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly MainWindowViewModel _mainWindowViewModel;
+    public MainWindowViewModel MainWindowViewModel { get; }
 
     [ObservableProperty]
     private ViewModelBase _currentView = default!;
@@ -24,7 +26,18 @@ public partial class MainViewModel : ViewModelBase
     private string _activeViewName = "Home";
 
     [ObservableProperty]
+    private bool _isSidebarOpen = true;
+
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
+    public OmnibarViewModel Omnibar { get; } = new();
+
+    [ObservableProperty]
     private string _workspaceName = "My Studio";
+
+    [ObservableProperty]
+    private string _workspaceModeName = "Private Workspace";
 
     [ObservableProperty]
     private string _userName = "User";
@@ -40,21 +53,114 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(MainWindowViewModel mainWindowViewModel)
     {
-        _mainWindowViewModel = mainWindowViewModel;
+        MainWindowViewModel = mainWindowViewModel;
 
         var workspaceService = new FlowDesk.Infrastructure.Services.WorkspaceService();
         var workspace = workspaceService.GetCurrentWorkspace();
         var user = workspaceService.GetCurrentUser();
 
-        if (workspace != null) WorkspaceName = workspace.Name;
+        if (workspace != null) 
+        {
+            WorkspaceName = workspace.Name;
+            WorkspaceModeName = workspace.Mode switch
+            {
+                FlowDesk.Core.Enums.WorkspaceMode.Local => "Local Workspace",
+                FlowDesk.Core.Enums.WorkspaceMode.Private => "Private Workspace",
+                FlowDesk.Core.Enums.WorkspaceMode.Joined => "Joined Workspace",
+                _ => "Workspace"
+            };
+        }
         if (user != null) UserName = user.Name;
+
+        Omnibar.OnResultSelected = HandleOmnibarResult;
 
         CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<FlowDesk.Desktop.Messages.ToastNotificationMessage>(this, (r, m) =>
         {
             ShowToast(m.Value);
         });
 
+        PendingJoinRequests.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasPendingJoinRequests));
+
+        FlowDesk.Infrastructure.Hosting.WorkspaceHub.OnJoinRequestReceived += message =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                PendingJoinRequests.Add(message);
+                ShowToast($"New join request from {message.UserName}");
+            });
+        };
+
+        FlowDesk.Infrastructure.Hosting.WorkspaceHub.OnMemberDisconnected += userName =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                using var db = new FlowDesk.Infrastructure.Data.FlowDeskDbContext();
+                var userToRemove = db.LocalUsers.FirstOrDefault(u => u.Name == userName && u.Role != "Owner");
+                if (userToRemove != null)
+                {
+                    db.LocalUsers.Remove(userToRemove);
+                    await db.SaveChangesAsync();
+                    
+                    // Reload members if Members view is active
+                    if (CurrentView is MembersViewModel mvm)
+                    {
+                        mvm.LoadMembersAsync().GetAwaiter().GetResult();
+                    }
+                }
+                ShowToast($"{userName} disconnected from the workspace.");
+            });
+        };
+
         CurrentView = new DashboardViewModel();
+    }
+
+    public System.Collections.ObjectModel.ObservableCollection<FlowDesk.Infrastructure.Hosting.JoinRequestMessage> PendingJoinRequests { get; } = new();
+    
+    public bool HasPendingJoinRequests => PendingJoinRequests.Count > 0;
+    
+    [ObservableProperty] private bool _isJoinRequestOpen; // Kept for backwards compatibility if referenced, but unused
+
+    public async System.Threading.Tasks.Task ApproveJoinAsync(FlowDesk.Infrastructure.Hosting.JoinRequestMessage request)
+    {
+        PendingJoinRequests.Remove(request);
+        var hub = FlowDesk.Infrastructure.Hosting.LocalServerHost.HubContext;
+        if (hub != null)
+        {
+            await hub.Clients.Client(request.ConnectionId).SendAsync("JoinApproved");
+            
+            // Track the connection so we can detect disconnects
+            FlowDesk.Infrastructure.Hosting.WorkspaceHub.RegisterMemberConnection(request.ConnectionId, request.UserName);
+
+            // Save member to database
+            using var db = new FlowDesk.Infrastructure.Data.FlowDeskDbContext();
+            var workspace = db.Workspaces.FirstOrDefault();
+            if (workspace != null)
+            {
+                var existingUser = db.LocalUsers.FirstOrDefault(u => u.Name == request.UserName);
+                if (existingUser == null)
+                {
+                    db.LocalUsers.Add(new FlowDesk.Core.Models.LocalUser 
+                    { 
+                        Name = request.UserName, 
+                        Role = "Join", 
+                        WorkspaceId = workspace.Id 
+                    });
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            ShowToast($"{request.UserName} joined the workspace.");
+        }
+    }
+
+    public async System.Threading.Tasks.Task RejectJoinAsync(FlowDesk.Infrastructure.Hosting.JoinRequestMessage request)
+    {
+        PendingJoinRequests.Remove(request);
+        var hub = FlowDesk.Infrastructure.Hosting.LocalServerHost.HubContext;
+        if (hub != null)
+        {
+            await hub.Clients.Client(request.ConnectionId).SendAsync("JoinRejected");
+        }
     }
 
     [RelayCommand]
@@ -69,7 +175,7 @@ public partial class MainViewModel : ViewModelBase
             "Docs" => new DocsViewModel(),
             "Files" => new FilesViewModel(),
             "Requests" => new RequestsViewModel(),
-            "Members" => new MembersViewModel(),
+            "Members" => new MembersViewModel(this),
             "Settings" => new SettingsViewModel(this),
             _ => new DashboardViewModel()
         };
@@ -110,5 +216,69 @@ public partial class MainViewModel : ViewModelBase
     {
         IsToastVisible = false;
         _toastTimer?.Stop();
+    }
+
+    [RelayCommand]
+    private void ExecuteNew()
+    {
+        if (CurrentView is IPageCommands page && page.NewCommand?.CanExecute(null) == true)
+        {
+            page.NewCommand.Execute(null);
+        }
+    }
+
+    [RelayCommand]
+    private void ExecuteSave()
+    {
+        if (CurrentView is IPageCommands page && page.SaveCommand?.CanExecute(null) == true)
+        {
+            page.SaveCommand.Execute(null);
+        }
+    }
+
+    [RelayCommand]
+    private void ExecuteSearch()
+    {
+        if (CurrentView is IPageCommands page && page.SearchCommand?.CanExecute(null) == true)
+        {
+            page.SearchCommand.Execute(null);
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleOmnibar()
+    {
+        if (Omnibar.IsOpen)
+            Omnibar.Close();
+        else
+            Omnibar.Open();
+    }
+
+    private void HandleOmnibarResult(Models.SearchResultItem item)
+    {
+        switch (item.Type)
+        {
+            case "Project":
+                Navigate("Projects");
+                break;
+            case "Task":
+                Navigate("Tasks");
+                break;
+            case "Doc":
+                Navigate("Docs");
+                break;
+            case "File":
+                Navigate("Files");
+                break;
+        }
+    }
+
+    [RelayCommand]
+    private void ExecuteClose()
+    {
+        if (CurrentView is IPageCommands page && page.CloseCommand?.CanExecute(null) == true)
+        {
+            page.CloseCommand.Execute(null);
+        }
     }
 }

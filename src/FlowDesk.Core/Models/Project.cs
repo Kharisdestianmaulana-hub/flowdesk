@@ -15,4 +15,6 @@ public class Project
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public Guid WorkspaceId { get; set; }
+    
+    public System.Collections.Generic.ICollection<ProjectTag> ProjectTags { get; set; } = new System.Collections.Generic.List<ProjectTag>();
 }

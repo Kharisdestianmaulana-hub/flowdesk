@@ -15,4 +15,6 @@ public class TaskItem
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public Guid? ProjectId { get; set; }
     public Guid? AssigneeId { get; set; }
+    
+    public System.Collections.Generic.ICollection<TaskTag> TaskTags { get; set; } = new System.Collections.Generic.List<TaskTag>();
 }

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
 
 namespace FlowDesk.Desktop.ViewModels;
@@ -10,14 +11,27 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        var settings = new FlowDesk.Infrastructure.Services.LocalSettingsService().LoadSettings();
+        AppZoomLevel = settings.AppZoomLevel > 0 ? settings.AppZoomLevel : 1.0;
+
         try 
         {
             using var db = new FlowDesk.Infrastructure.Data.FlowDeskDbContext();
-            // Ensure created is useful if it's the very first time. App.axaml.cs might do this too.
-            db.Database.EnsureCreated();
-            if (System.Linq.Enumerable.Any(db.Workspaces))
+            Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(db.Database);
+            var workspace = System.Linq.Enumerable.FirstOrDefault(db.Workspaces);
+            if (workspace != null)
             {
-                Content = new MainViewModel(this);
+                if (workspace.Mode == FlowDesk.Core.Enums.WorkspaceMode.Joined)
+                {
+                    // Joined clients do not persist across restarts for now
+                    db.Database.EnsureDeleted();
+                    db.Database.EnsureCreated();
+                    Content = new WelcomeViewModel(this);
+                }
+                else
+                {
+                    Content = new MainViewModel(this);
+                }
             }
             else
             {
@@ -34,5 +48,43 @@ public partial class MainWindowViewModel : ViewModelBase
     public void NavigateTo(ViewModelBase viewModel)
     {
         Content = viewModel;
+    }
+
+    [ObservableProperty]
+    private double _appZoomLevel = 1.0;
+
+    [RelayCommand]
+    public void ZoomIn()
+    {
+        if (AppZoomLevel < 2.0)
+        {
+            AppZoomLevel = Math.Round(AppZoomLevel + 0.1, 1);
+            SaveZoomLevel();
+        }
+    }
+
+    [RelayCommand]
+    public void ZoomOut()
+    {
+        if (AppZoomLevel > 0.5)
+        {
+            AppZoomLevel = Math.Round(AppZoomLevel - 0.1, 1);
+            SaveZoomLevel();
+        }
+    }
+
+    [RelayCommand]
+    public void ResetZoom()
+    {
+        AppZoomLevel = 1.0;
+        SaveZoomLevel();
+    }
+
+    private void SaveZoomLevel()
+    {
+        var settingsService = new FlowDesk.Infrastructure.Services.LocalSettingsService();
+        var settings = settingsService.LoadSettings();
+        settings.AppZoomLevel = AppZoomLevel;
+        settingsService.SaveSettings(settings);
     }
 }

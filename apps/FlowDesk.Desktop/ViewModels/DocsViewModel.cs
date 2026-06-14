@@ -8,10 +8,9 @@ using System.Linq;
 
 namespace FlowDesk.Desktop.ViewModels;
 
-public partial class DocsViewModel : ViewModelBase
+public partial class DocsViewModel : ViewModelBase, IPageCommands
 {
-    private readonly DocumentService _documentService = new();
-    private readonly ProjectService _projectService = new();
+    private readonly FlowDesk.Core.Interfaces.IDataSource _dataSource = FlowDesk.Desktop.Services.DataSourceProvider.Current;
 
     [ObservableProperty]
     private ObservableCollection<Document> _documents = new();
@@ -21,6 +20,12 @@ public partial class DocsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string _sortBy = "UpdatedAt";
+
+    [ObservableProperty]
+    private bool _sortAscending = false;
 
     [ObservableProperty]
     private ObservableCollection<Project> _projects = new();
@@ -36,12 +41,19 @@ public partial class DocsViewModel : ViewModelBase
     [ObservableProperty] private string _editTitle = string.Empty;
     [ObservableProperty] private string _editContent = string.Empty;
     [ObservableProperty] private string _saveStatus = string.Empty;
+    [ObservableProperty] private bool _isPreviewMode;
+
+    [RelayCommand]
+    private void TogglePreviewMode()
+    {
+        IsPreviewMode = !IsPreviewMode;
+    }
     
     private System.Timers.Timer? _debounceTimer;
 
     public DocsViewModel()
     {
-        LoadDocuments();
+        _ = LoadDocumentsAsync();
         
         _debounceTimer = new System.Timers.Timer(1000); // 1 second debounce
         _debounceTimer.AutoReset = false;
@@ -49,17 +61,17 @@ public partial class DocsViewModel : ViewModelBase
         {
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => 
             {
-                SaveDocument();
+                _ = SaveDocumentAsync();
             });
         };
     }
 
-    private void LoadDocuments()
+    private async System.Threading.Tasks.Task LoadDocumentsAsync()
     {
-        var docs = _documentService.GetDocuments();
+        var docs = await _dataSource.GetDocumentsAsync();
         Documents = new ObservableCollection<Document>(docs);
 
-        var dbProjects = _projectService.GetProjects();
+        var dbProjects = await _dataSource.GetProjectsAsync();
         Projects = new ObservableCollection<Project>(dbProjects);
 
         ApplyFilter();
@@ -85,12 +97,44 @@ public partial class DocsViewModel : ViewModelBase
             );
             FilteredDocuments = new ObservableCollection<Document>(filtered);
         }
+
+        // Apply Sorting
+        var sorted = SortBy switch
+        {
+            "Title" => SortAscending ? FilteredDocuments.OrderBy(d => d.Title) : FilteredDocuments.OrderByDescending(d => d.Title),
+            "UpdatedAt" => SortAscending ? FilteredDocuments.OrderBy(d => d.UpdatedAt) : FilteredDocuments.OrderByDescending(d => d.UpdatedAt),
+            _ => SortAscending ? FilteredDocuments.OrderBy(d => d.UpdatedAt) : FilteredDocuments.OrderByDescending(d => d.UpdatedAt)
+        };
+
+        FilteredDocuments = new ObservableCollection<Document>(sorted);
     }
 
     [RelayCommand]
-    private void CreateDocument()
+    private void Sort(string columnName)
     {
-        var newDoc = _documentService.CreateDocument("Untitled Document", "", null);
+        if (SortBy == columnName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortBy = columnName;
+            SortAscending = true;
+        }
+        ApplyFilter();
+    }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task CreateDocumentAsync()
+    {
+        var newDoc = new Document
+        {
+            Title = "Untitled Document",
+            Content = "",
+            CreatedAt = System.DateTime.UtcNow,
+            UpdatedAt = System.DateTime.UtcNow
+        };
+        newDoc = await _dataSource.CreateDocumentAsync(newDoc);
         Documents.Insert(0, newDoc);
         ApplyFilter();
         SelectedDocument = newDoc;
@@ -98,7 +142,7 @@ public partial class DocsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void SaveDocument()
+    private async System.Threading.Tasks.Task SaveDocumentAsync()
     {
         if (SelectedDocument != null)
         {
@@ -108,20 +152,17 @@ public partial class DocsViewModel : ViewModelBase
                 // Update SelectedDocument with Edit values before saving
                 SelectedDocument.Title = EditTitle;
                 SelectedDocument.Content = EditContent;
+                SelectedDocument.UpdatedAt = System.DateTime.UtcNow;
 
-                var updated = _documentService.UpdateDocument(SelectedDocument.Id, SelectedDocument.Title, SelectedDocument.Content, SelectedDocument.ProjectId);
-                if (updated != null)
+                await _dataSource.UpdateDocumentAsync(SelectedDocument);
+                
+                var index = Documents.IndexOf(SelectedDocument);
+                if (index >= 0)
                 {
-                    var index = Documents.IndexOf(SelectedDocument);
-                    if (index >= 0)
-                    {
-                        // Don't replace the object to avoid losing focus, just update properties
-                        Documents[index].Title = updated.Title;
-                        Documents[index].UpdatedAt = updated.UpdatedAt;
-                        ApplyFilter();
-                    }
-                    SaveStatus = "Saved";
+                    // Trigger property change internally implicitly
+                    ApplyFilter();
                 }
+                SaveStatus = "Saved";
             }
             catch
             {
@@ -143,11 +184,11 @@ public partial class DocsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ExecuteDelete()
+    private async System.Threading.Tasks.Task ExecuteDeleteAsync()
     {
         if (SelectedDocument != null)
         {
-            _documentService.DeleteDocument(SelectedDocument.Id);
+            await _dataSource.DeleteDocumentAsync(SelectedDocument.Id);
             Documents.Remove(SelectedDocument);
             ApplyFilter();
             SelectedDocument = null;
@@ -166,7 +207,17 @@ public partial class DocsViewModel : ViewModelBase
             OnPropertyChanged(nameof(EditContent));
             SaveStatus = string.Empty;
         }
+        else
+        {
+            EditTitle = string.Empty;
+            EditContent = string.Empty;
+            SaveStatus = string.Empty;
+            _debounceTimer?.Stop();
+        }
+        
         OnPropertyChanged(nameof(IsDocumentSelected));
+        OnPropertyChanged(nameof(SaveCommand));
+        OnPropertyChanged(nameof(CloseCommand));
     }
 
     partial void OnEditTitleChanged(string value)
@@ -179,6 +230,8 @@ public partial class DocsViewModel : ViewModelBase
         TriggerAutoSave();
     }
 
+
+
     private void TriggerAutoSave()
     {
         if (SelectedDocument == null) return;
@@ -186,4 +239,9 @@ public partial class DocsViewModel : ViewModelBase
         _debounceTimer?.Stop();
         _debounceTimer?.Start();
     }
+
+    public System.Windows.Input.ICommand? NewCommand => CreateDocumentCommand;
+    public System.Windows.Input.ICommand? SaveCommand => IsDocumentSelected ? SaveDocumentCommand : null;
+    public System.Windows.Input.ICommand? SearchCommand => null;
+    public System.Windows.Input.ICommand? CloseCommand => IsDeleteConfirmOpen ? CancelDeleteCommand : null;
 }
