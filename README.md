@@ -10,7 +10,7 @@ FlowDesk is currently in its v1.4 Beta stage, introducing local networking and t
 - **Network Auto-Discovery**: Automatically discover active Local Workspaces on your Wi-Fi or LAN via UDP Broadcast without needing to share IP addresses.
 - **Real-Time Collaboration**: Changes to projects, tasks, and documents sync instantly to all connected team members via SignalR.
 - **Projects & Tasks**: Organize your work into distinct projects, track status, priority, and link tasks.
-- **Docs**: A clean markdown-based document editor with auto-save functionality.
+- **Docs**: A clean document editor to take notes and draft ideas.
 - **Files**: Securely import and organize reference files locally within your workspace.
 - **Member Management**: Accept or reject join requests directly from the app. Monitor who is online.
 - **Dark/Light Mode**: Full support for system-integrated dark and light themes.
@@ -47,7 +47,6 @@ Your data is entirely private and belongs to you. We do not collect analytics, t
 ## Known Limitations
 - The current v1.4 version supports Private and Local Workspaces over LAN. 
 - Server Workspace (Cloud Sync), Advanced Permissions, Comments/Mentions are planned future features and are not available in this release.
-- Rich text features in Docs are currently limited to basic markdown representation.
 
 ## Roadmap Summary
 - **v1.0**: First public-ready release (Private Workspace)
@@ -71,7 +70,7 @@ FlowDesk saat ini berada pada tahap v1.4 Beta, memperkenalkan fitur jaringan lok
 - **Network Auto-Discovery**: Secara otomatis menemukan ruang kerja lokal (Local Workspaces) yang aktif di Wi-Fi atau LAN Anda menggunakan *UDP Broadcast* tanpa perlu membagikan alamat IP secara manual.
 - **Kolaborasi Real-Time**: Perubahan pada proyek, tugas, dan dokumen disinkronkan secara instan ke semua anggota tim yang terhubung melalui SignalR.
 - **Proyek & Tugas**: Atur pekerjaan Anda ke dalam proyek yang berbeda, lacak status, prioritas, dan tautkan tugas.
-- **Dokumen (Docs)**: Editor dokumen berbasis *markdown* yang rapi dengan fungsi simpan otomatis (*auto-save*).
+- **Dokumen (Docs)**: Editor dokumen sederhana untuk mencatat dan menyusun draf ide.
 - **File**: Impor dan atur file referensi dengan aman di dalam ruang kerja Anda secara lokal.
 - **Manajemen Anggota**: Terima atau tolak permintaan bergabung langsung dari dalam aplikasi. Pantau siapa saja yang sedang *online*.
 - **Mode Gelap/Terang**: Dukungan penuh untuk tema gelap dan terang bawaan sistem.
@@ -108,7 +107,6 @@ Data Anda sepenuhnya bersifat pribadi dan milik Anda seutuhnya. Kami tidak mengu
 ## Batasan Saat Ini
 - Versi v1.4 saat ini hanya mendukung *Private Workspace* dan *Local Workspace* melalui LAN. 
 - *Server Workspace* (Sinkronisasi *Cloud*), Izin Akses Tingkat Lanjut (*Advanced Permissions*), dan fitur Komentar/Sebutan (*Mentions*) adalah fitur yang direncanakan di masa depan dan belum tersedia pada rilis ini.
-- Fitur *rich text* pada Dokumen saat ini terbatas pada representasi *markdown* dasar.
 
 ## Ringkasan Peta Jalan (Roadmap)
 - **v1.0**: Rilis perdana untuk publik (Private Workspace)
