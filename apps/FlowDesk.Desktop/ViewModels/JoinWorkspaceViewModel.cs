@@ -214,7 +214,7 @@ public partial class JoinWorkspaceViewModel : ViewModelBase
             CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
                 new FlowDesk.Desktop.Messages.ToastNotificationMessage("Successfully joined workspace!"));
 
-            _mainViewModel.NavigateTo(new MainViewModel(_mainViewModel));
+            _mainViewModel.NavigateTo(new MainViewModel(_mainViewModel, _signalRService));
         }
         catch (System.Exception ex)
         {

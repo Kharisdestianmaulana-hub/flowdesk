@@ -12,6 +12,7 @@ public class SignalRClientService
     public event Action<string>? OnConnectionStateChanged;
     public event Action<string>? OnJoinApproved;
     public event Action<string>? OnJoinRejected;
+    public event Action? OnHostDisconnected;
 
     public async Task ConnectAsync(string serverUrl)
     {
@@ -26,11 +27,11 @@ public class SignalRClientService
             .WithAutomaticReconnect()
             .Build();
 
-        _hubConnection.Closed += async (error) =>
+        _hubConnection.Closed += (error) =>
         {
             OnConnectionStateChanged?.Invoke("Disconnected");
-            await Task.Delay(new Random().Next(0, 5) * 1000);
-            try { await _hubConnection.StartAsync(); } catch { }
+            OnHostDisconnected?.Invoke();
+            return Task.CompletedTask;
         };
 
         _hubConnection.Reconnecting += error =>

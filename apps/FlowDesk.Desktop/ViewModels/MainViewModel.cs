@@ -51,7 +51,7 @@ public partial class MainViewModel : ViewModelBase
     public bool IsMembersActive => ActiveViewName == "Members";
     public bool IsSettingsActive => ActiveViewName == "Settings";
 
-    public MainViewModel(MainWindowViewModel mainWindowViewModel)
+    public MainViewModel(MainWindowViewModel mainWindowViewModel, FlowDesk.Infrastructure.Services.SignalRClientService? signalRService = null)
     {
         MainWindowViewModel = mainWindowViewModel;
 
@@ -71,6 +71,24 @@ public partial class MainViewModel : ViewModelBase
             };
         }
         if (user != null) UserName = user.Name;
+
+        if (signalRService != null)
+        {
+            signalRService.OnHostDisconnected += () =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    using var db = new FlowDesk.Infrastructure.Data.FlowDeskDbContext();
+                    db.Database.EnsureDeleted();
+                    db.Database.EnsureCreated();
+                    
+                    CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
+                        new FlowDesk.Desktop.Messages.ToastNotificationMessage("Host disconnected. You have left the workspace."));
+                    
+                    MainWindowViewModel.NavigateTo(new WelcomeViewModel(MainWindowViewModel));
+                });
+            };
+        }
 
         Omnibar.OnResultSelected = HandleOmnibarResult;
 
