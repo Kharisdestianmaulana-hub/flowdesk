@@ -25,7 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 {
                     // Joined clients do not persist across restarts for now
                     db.Database.EnsureDeleted();
-                    db.Database.EnsureCreated();
+                    Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(db.Database);
                     Content = new WelcomeViewModel(this);
                 }
                 else

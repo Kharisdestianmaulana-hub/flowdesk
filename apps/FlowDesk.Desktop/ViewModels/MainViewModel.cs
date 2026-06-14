@@ -85,7 +85,7 @@ public partial class MainViewModel : ViewModelBase
 
                     using var db = new FlowDesk.Infrastructure.Data.FlowDeskDbContext();
                     db.Database.EnsureDeleted();
-                    db.Database.EnsureCreated();
+                    Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(db.Database);
                     
                     MainWindowViewModel.NavigateTo(new WelcomeViewModel(MainWindowViewModel));
                 });
