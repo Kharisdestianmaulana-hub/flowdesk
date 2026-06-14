@@ -2,8 +2,8 @@
 
 FlowDesk is a clean, native desktop productivity application built with Avalonia UI. It is designed to be a personal, local-first workspace to manage your projects, tasks, documents, and files seamlessly without requiring an internet connection.
 
-## Current Version: v1.4 Beta (Local Workspace & LAN Collaboration)
-FlowDesk is currently in its v1.4 Beta stage, introducing local networking and team collaboration.
+## Current Version: v1.5.0 (Local Workspace & LAN Collaboration)
+FlowDesk is currently in its v1.5.0 stage, introducing robust local networking and team collaboration.
 
 ### Features
 - **Private & Local Workspaces**: Work solo in a Private Workspace or open your workspace to your local network (LAN).
@@ -45,7 +45,7 @@ dotnet publish -c Release -r osx-x64 --self-contained
 Your data is entirely private and belongs to you. We do not collect analytics, telemetry, or upload your data to any cloud servers.
 
 ## Known Limitations
-- The current v1.4 version supports Private and Local Workspaces over LAN. 
+- The current v1.5.0 version supports Private and Local Workspaces over LAN. 
 - Server Workspace (Cloud Sync), Advanced Permissions, Comments/Mentions are planned future features and are not available in this release.
 
 ## Roadmap Summary
@@ -62,8 +62,8 @@ Your data is entirely private and belongs to you. We do not collect analytics, t
 
 FlowDesk adalah aplikasi produktivitas desktop asli (*native*) yang rapi dan bersih, dibangun menggunakan Avalonia UI. Aplikasi ini dirancang sebagai ruang kerja pribadi yang mengutamakan kelokalan (*local-first*) untuk mengelola proyek, tugas, dokumen, dan file Anda dengan mulus tanpa memerlukan koneksi internet.
 
-## Versi Saat Ini: v1.4 Beta (Local Workspace & Kolaborasi LAN)
-FlowDesk saat ini berada pada tahap v1.4 Beta, memperkenalkan fitur jaringan lokal dan kolaborasi tim.
+## Versi Saat Ini: v1.5.0 (Local Workspace & Kolaborasi LAN)
+FlowDesk saat ini berada pada tahap v1.5.0, memperkenalkan fitur jaringan lokal dan kolaborasi tim yang solid.
 
 ### Fitur
 - **Private & Local Workspaces**: Bekerja sendirian di ruang kerja pribadi (Private) atau buka ruang kerja Anda untuk jaringan lokal (LAN).
@@ -105,7 +105,7 @@ dotnet publish -c Release -r osx-x64 --self-contained
 Data Anda sepenuhnya bersifat pribadi dan milik Anda seutuhnya. Kami tidak mengumpulkan analitik, telemetri, atau mengunggah data Anda ke server *cloud* mana pun.
 
 ## Batasan Saat Ini
-- Versi v1.4 saat ini hanya mendukung *Private Workspace* dan *Local Workspace* melalui LAN. 
+- Versi v1.5.0 saat ini hanya mendukung *Private Workspace* dan *Local Workspace* melalui LAN. 
 - *Server Workspace* (Sinkronisasi *Cloud*), Izin Akses Tingkat Lanjut (*Advanced Permissions*), dan fitur Komentar/Sebutan (*Mentions*) adalah fitur yang direncanakan di masa depan dan belum tersedia pada rilis ini.
 
 ## Ringkasan Peta Jalan (Roadmap)
