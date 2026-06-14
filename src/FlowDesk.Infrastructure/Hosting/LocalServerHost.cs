@@ -51,7 +51,11 @@ public class LocalServerHost
                 policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
             });
         });
-        builder.Services.AddSignalR();
+        builder.Services.AddSignalR(options =>
+        {
+            options.KeepAliveInterval = TimeSpan.FromSeconds(2);
+            options.ClientTimeoutInterval = TimeSpan.FromSeconds(5);
+        });
 
         _app = builder.Build();
 

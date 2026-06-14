@@ -27,6 +27,9 @@ public class SignalRClientService
             .WithAutomaticReconnect()
             .Build();
 
+        _hubConnection.ServerTimeout = TimeSpan.FromSeconds(5);
+        _hubConnection.KeepAliveInterval = TimeSpan.FromSeconds(2);
+
         _hubConnection.Closed += (error) =>
         {
             OnConnectionStateChanged?.Invoke("Disconnected");
