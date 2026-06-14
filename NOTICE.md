@@ -1,5 +1,6 @@
 FlowDesk
-Copyright (c) 2026 Kharis Destian Maulana
+Copyright (c) 2026 Kharis Destian Maulana (Riray)
+All Rights Reserved.
 
-FlowDesk is an open-source native desktop workspace application.
-This project is licensed under the MIT License.
+FlowDesk is a proprietary native desktop workspace application.
+This project is governed by the FlowDesk Proprietary License.
