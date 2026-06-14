@@ -56,3 +56,64 @@ Your data is entirely private and belongs to you. We do not collect analytics, t
 
 ---
 *FlowDesk — Your clean, offline productivity haven.*
+
+---
+
+# FlowDesk (Bahasa Indonesia)
+
+FlowDesk adalah aplikasi produktivitas desktop asli (*native*) yang rapi dan bersih, dibangun menggunakan Avalonia UI. Aplikasi ini dirancang sebagai ruang kerja pribadi yang mengutamakan kelokalan (*local-first*) untuk mengelola proyek, tugas, dokumen, dan file Anda dengan mulus tanpa memerlukan koneksi internet.
+
+## Versi Saat Ini: v1.4 Beta (Local Workspace & Kolaborasi LAN)
+FlowDesk saat ini berada pada tahap v1.4 Beta, memperkenalkan fitur jaringan lokal dan kolaborasi tim.
+
+### Fitur
+- **Private & Local Workspaces**: Bekerja sendirian di ruang kerja pribadi (Private) atau buka ruang kerja Anda untuk jaringan lokal (LAN).
+- **Network Auto-Discovery**: Secara otomatis menemukan ruang kerja lokal (Local Workspaces) yang aktif di Wi-Fi atau LAN Anda menggunakan *UDP Broadcast* tanpa perlu membagikan alamat IP secara manual.
+- **Kolaborasi Real-Time**: Perubahan pada proyek, tugas, dan dokumen disinkronkan secara instan ke semua anggota tim yang terhubung melalui SignalR.
+- **Proyek & Tugas**: Atur pekerjaan Anda ke dalam proyek yang berbeda, lacak status, prioritas, dan tautkan tugas.
+- **Dokumen (Docs)**: Editor dokumen berbasis *markdown* yang rapi dengan fungsi simpan otomatis (*auto-save*).
+- **File**: Impor dan atur file referensi dengan aman di dalam ruang kerja Anda secara lokal.
+- **Manajemen Anggota**: Terima atau tolak permintaan bergabung langsung dari dalam aplikasi. Pantau siapa saja yang sedang *online*.
+- **Mode Gelap/Terang**: Dukungan penuh untuk tema gelap dan terang bawaan sistem.
+- **Arsitektur Local-First**: Data Anda tidak pernah meninggalkan perangkat Anda. Semuanya disimpan secara lokal menggunakan SQLite.
+- **Pencadangan Otomatis**: Pencadangan database otomatis setiap hari untuk memastikan keamanan data Anda.
+
+## Instalasi & Penggunaan
+Saat ini, FlowDesk dibangun terutama untuk macOS, tetapi 100% kompatibel dengan Windows dan Linux melalui .NET 10.0.
+
+### Persyaratan
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+
+### Menjalankan Secara Lokal
+```bash
+git clone <repository-url>
+cd flowdesk/apps/FlowDesk.Desktop
+dotnet run
+```
+
+### Membangun (Build) untuk Rilis
+Untuk membangun *executable* mandiri khusus macOS:
+```bash
+dotnet publish -c Release -r osx-x64 --self-contained
+```
+
+## Penyimpanan Data & Privasi
+**FlowDesk adalah aplikasi Local-First.**
+- **Database**: Semua data ruang kerja, proyek, dan tugas Anda disimpan di `FlowDeskData/flowdesk.db` (SQLite).
+- **File**: File yang diimpor disalin dengan aman dan disimpan di dalam direktori `FlowDeskData/files/`.
+- **Log & Cadangan**: Log aplikasi disimpan di `FlowDeskData/logs/`, dan file cadangan (*backup*) otomatis disimpan di `FlowDeskData/backups/auto/`.
+
+Data Anda sepenuhnya bersifat pribadi dan milik Anda seutuhnya. Kami tidak mengumpulkan analitik, telemetri, atau mengunggah data Anda ke server *cloud* mana pun.
+
+## Batasan Saat Ini
+- Versi v1.4 saat ini hanya mendukung *Private Workspace* dan *Local Workspace* melalui LAN. 
+- *Server Workspace* (Sinkronisasi *Cloud*), Izin Akses Tingkat Lanjut (*Advanced Permissions*), dan fitur Komentar/Sebutan (*Mentions*) adalah fitur yang direncanakan di masa depan dan belum tersedia pada rilis ini.
+- Fitur *rich text* pada Dokumen saat ini terbatas pada representasi *markdown* dasar.
+
+## Ringkasan Peta Jalan (Roadmap)
+- **v1.0**: Rilis perdana untuk publik (Private Workspace)
+- **v1.5**: Penyempurnaan penuh *Local Workspace* (Tahap Saat Ini)
+- **v2.0**: *Server Workspace* (Backend ASP.NET Core yang di-*host* sendiri)
+
+---
+*FlowDesk — Tempat produktivitas offline Anda yang bersih dan rapi.*

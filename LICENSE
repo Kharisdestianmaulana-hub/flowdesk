@@ -18,3 +18,26 @@ Any contributions, modifications, or code submitted (via Pull Requests, patches,
 
 4. NO WARRANTY
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+Lisensi Hak Milik (Proprietary) FlowDesk
+Hak Cipta (c) 2026 Kharis Destian Maulana (Riray)
+Seluruh Hak Cipta Dilindungi Undang-Undang.
+
+1. KEPEMILIKAN
+Perangkat lunak ini (FlowDesk) beserta file dokumentasi yang menyertainya adalah hak milik eksklusif (proprietary property) dari Kharis Destian Maulana.
+
+2. BATASAN PENGGUNAAN & DISTRIBUSI
+Anda diizinkan untuk melihat kode sumber dari perangkat lunak ini murni untuk tujuan edukasi dan referensi. 
+Namun, Anda DILARANG KERAS untuk:
+- Menyalin, memproduksi ulang, atau mendistribusikan ulang perangkat lunak ini atau kode sumbernya, baik sebagian maupun seluruhnya.
+- Memodifikasi perangkat lunak atau membuat karya turunan (aplikasi pesaing, *fork*, atau *clone*).
+- Menggunakan perangkat lunak atau kodenya untuk tujuan komersial, baik secara langsung maupun tidak langsung.
+- Menjadi *host*, menjual, atau memberikan sublisensi atas perangkat lunak ini.
+
+3. KONTRIBUSI DAN CLA (Perjanjian Lisensi Kontributor)
+Segala bentuk kontribusi, modifikasi, atau kode yang dikirimkan (melalui *Pull Request*, *patch*, dll.) ke repositori ini tunduk pada Perjanjian Lisensi Kontributor (CLA). Dengan mengirimkan kontribusi apa pun, Anda setuju untuk secara mutlak menyerahkan dan mengalihkan seluruh hak cipta dan hak kekayaan intelektual atas kontribusi Anda kepada Kharis Destian Maulana. Anda melepaskan hak untuk mengklaim kepemilikan atau menuntut penghapusan atas kode yang Anda sumbangkan di masa mendatang.
+
+4. TANPA GARANSI
+PERANGKAT LUNAK INI DISEDIAKAN "SEBAGAIMANA ADANYA", TANPA JAMINAN DALAM BENTUK APA PUN, BAIK TERSURAT MAUPUN TERSIRAT, TERMASUK NAMUN TIDAK TERBATAS PADA JAMINAN KELAYAKAN UNTUK DIPERDAGANGKAN, KESESUAIAN UNTUK TUJUAN TERTENTU, DAN PELANGGARAN HAK CIPTA. DALAM KEADAAN APA PUN PENULIS ATAU PEMEGANG HAK CIPTA TIDAK BERTANGGUNG JAWAB ATAS KLAIM, KERUSAKAN, ATAU TANGGUNG JAWAB LAINNYA, BAIK DALAM TINDAKAN KONTRAK, KEALPAAN ATAU LAINNYA, YANG TIMBUL DARI, DI LUAR, ATAU SEHUBUNGAN DENGAN PERANGKAT LUNAK INI ATAU PENGGUNAAN MAUPUN URUSAN LAIN DALAM PERANGKAT LUNAK INI.
