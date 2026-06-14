@@ -76,14 +76,16 @@ public partial class MainViewModel : ViewModelBase
         {
             signalRService.OnHostDisconnected += () =>
             {
-                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
+                        new FlowDesk.Desktop.Messages.ToastNotificationMessage("Host disconnected. Redirecting to welcome screen..."));
+                    
+                    await System.Threading.Tasks.Task.Delay(3000);
+
                     using var db = new FlowDesk.Infrastructure.Data.FlowDeskDbContext();
                     db.Database.EnsureDeleted();
                     db.Database.EnsureCreated();
-                    
-                    CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
-                        new FlowDesk.Desktop.Messages.ToastNotificationMessage("Host disconnected. You have left the workspace."));
                     
                     MainWindowViewModel.NavigateTo(new WelcomeViewModel(MainWindowViewModel));
                 });
