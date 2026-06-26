@@ -11,6 +11,7 @@ public class FlowDeskDbContext : DbContext
     public DbSet<LocalUser> LocalUsers { get; set; } = null!;
     public DbSet<Project> Projects { get; set; } = null!;
     public DbSet<TaskItem> Tasks { get; set; } = null!;
+    public DbSet<TaskComment> TaskComments { get; set; } = null!;
     public DbSet<ActivityLog> ActivityLogs { get; set; } = null!;
     public DbSet<Document> Documents { get; set; } = null!;
     public DbSet<FileItem> Files { get; set; } = null!;
@@ -61,6 +62,19 @@ public class FlowDeskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired();
         });
+
+        modelBuilder.Entity<TaskComment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.AuthorName).IsRequired();
+            
+            entity.HasOne(e => e.Task)
+                  .WithMany(t => t.Comments)
+                  .HasForeignKey(e => e.TaskId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
         modelBuilder.Entity<Document>(entity =>
         {

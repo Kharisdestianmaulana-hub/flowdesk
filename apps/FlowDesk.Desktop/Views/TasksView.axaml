@@ -12,12 +12,15 @@
 
     <Grid>
         <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
-            <Grid ColumnDefinitions="*, Auto, Auto">
+            <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto">
                 <TextBlock Grid.Column="0" Text="Tasks" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
                 
-                <TextBox Grid.Column="1" Text="{Binding SearchQuery}" Width="200" Classes="FlowDesk" PlaceholderText="Search tasks..." Margin="0,0,16,0" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1" ItemsSource="{Binding Statuses}" SelectedItem="{Binding FilterStatus}" PlaceholderText="Status" Width="120" Classes="FlowDesk" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="2" ItemsSource="{Binding Priorities}" SelectedItem="{Binding FilterPriority}" PlaceholderText="Priority" Width="120" Classes="FlowDesk" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                
+                <TextBox Grid.Column="3" Text="{Binding SearchQuery}" Width="200" Classes="FlowDesk" PlaceholderText="Search tasks..." Margin="0,0,16,0" VerticalAlignment="Center"/>
 
-                <Button Grid.Column="2" Content="Add Task" Command="{Binding OpenAddModalCommand}" Classes="Primary" VerticalAlignment="Center"/>
+                <Button Grid.Column="4" Content="Add Task" Command="{Binding OpenAddModalCommand}" Classes="Primary" VerticalAlignment="Center"/>
             </Grid>
 
             <!-- Table Header -->
@@ -68,8 +71,9 @@
 
         <!-- Task Detail Panel Overlay -->
         <Grid Classes="ModalOverlay" Background="#66000000" IsVisible="{Binding IsDetailOpen}">
-            <Border Background="{DynamicResource SurfaceBrush}" Width="400" HorizontalAlignment="Right" BoxShadow="0 4 20 0 #33000000">
-                <StackPanel Margin="{StaticResource Spacing6}" Spacing="24">
+            <Border Background="{DynamicResource SurfaceBrush}" Width="450" HorizontalAlignment="Right" BoxShadow="0 4 20 0 #33000000">
+                <ScrollViewer>
+                    <StackPanel Margin="{StaticResource Spacing6}" Spacing="24">
                     <Grid ColumnDefinitions="*, Auto">
                         <TextBlock Grid.Column="0" Text="Edit Task" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
                         <Button Grid.Column="1" Content="Close" Command="{Binding CloseTaskDetailCommand}" Classes="Secondary" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"/>
@@ -93,6 +97,27 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8">
+                            <TextBlock Text="Assignee" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <Button Background="Transparent" BorderThickness="1" BorderBrush="{DynamicResource BorderSoftBrush}" CornerRadius="16" Padding="4" HorizontalAlignment="Left">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ListBox ItemsSource="{Binding WorkspaceMembers}" SelectedItem="{Binding SelectedAssignee}" Width="150" Background="Transparent" BorderThickness="0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Flyout>
+                                </Button.Flyout>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="24" Height="24" Fill="{DynamicResource PrimaryBrush}"/>
+                                    <TextBlock Text="{Binding SelectedAssignee.Name, FallbackValue='Unassigned'}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Due Date" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
                             <CalendarDatePicker SelectedDate="{Binding EditDueDate}" HorizontalAlignment="Stretch"/>
                         </StackPanel>
@@ -107,12 +132,44 @@
                             <TextBox Text="{Binding EditTagsString}" Classes="FlowDesk" ToolTip.Tip="Enter comma separated tags"/>
                         </StackPanel>
 
+                        <!-- Comments Section -->
+                        <Border BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,1,0,0" Padding="0,16,0,0">
+                            <StackPanel Spacing="16">
+                                <TextBlock Text="Comments" FontWeight="{StaticResource FontWeightBold}" FontSize="{StaticResource FontSizeUI}" Foreground="{DynamicResource InkBrush}"/>
+                                <Border Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="{StaticResource RadiusMd}" Padding="12" MaxHeight="250">
+                                    <ScrollViewer>
+                                        <ItemsControl ItemsSource="{Binding CurrentTaskComments}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Spacing="4" Margin="0,0,0,12">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <Border Width="24" Height="24" CornerRadius="12" Background="{DynamicResource PrimaryBrush}" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding AuthorInitial}" Foreground="White" FontSize="11" FontWeight="{StaticResource FontWeightBold}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <TextBlock Text="{Binding AuthorName}" FontWeight="{StaticResource FontWeightBold}" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding CreatedAt, StringFormat='MMM dd HH:mm'}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Margin="32,0,0,0"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBox Grid.Column="0" Text="{Binding NewCommentText}" Classes="FlowDesk" PlaceholderText="Write a comment..." Margin="0,0,8,0"/>
+                                    <Button Grid.Column="1" Content="Send" Command="{Binding AddCommentCommand}" Classes="Primary"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="16" Margin="0,16,0,0">
                             <Button Content="Delete Task" Command="{Binding ConfirmDeleteCommand}" Classes="Secondary" Foreground="Red"/>
                             <Button Content="Save Changes" Command="{Binding SaveTaskDetailsCommand}" Classes="Primary"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
 

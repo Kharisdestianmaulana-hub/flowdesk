@@ -18,6 +18,7 @@ public class LocalServerHost
     private CancellationTokenSource? _cts;
 
     public bool IsRunning => _app != null;
+    public static event Action<FlowDesk.Core.Models.TaskComment>? OnLocalApiTaskCommentCreated;
 
     public async Task StartAsync(bool allowLanAccess)
     {
@@ -197,6 +198,38 @@ public class LocalServerHost
             using var db = new FlowDeskDbContext();
             var t = await db.Tasks.FindAsync(id);
             if(t!=null) { db.Tasks.Remove(t); await db.SaveChangesAsync(); }
+            return Results.Ok();
+        });
+        
+        // Task Comments
+        app.MapGet("/api/tasks/{taskId}/comments", (Guid taskId) =>
+        {
+            using var db = new FlowDeskDbContext();
+            var comments = db.TaskComments.Where(c => c.TaskId == taskId).OrderBy(c => c.CreatedAt).ToList();
+            return Results.Ok(comments);
+        });
+        
+        app.MapPost("/api/tasks/{taskId}/comments", async (Guid taskId, FlowDesk.Core.Models.TaskComment comment) => {
+            using var db = new FlowDeskDbContext();
+            comment.TaskId = taskId; // Ensure it matches the URL
+            db.TaskComments.Add(comment);
+            await db.SaveChangesAsync();
+            
+            // Broadcast to other clients
+            if (HubContext != null)
+            {
+                await HubContext.Clients.All.SendAsync("ReceiveTaskComment", comment);
+            }
+            
+            OnLocalApiTaskCommentCreated?.Invoke(comment);
+            
+            return Results.Ok(comment);
+        });
+
+        app.MapDelete("/api/comments/{id}", async (Guid id) => {
+            using var db = new FlowDeskDbContext();
+            var c = await db.TaskComments.FindAsync(id);
+            if(c!=null) { db.TaskComments.Remove(c); await db.SaveChangesAsync(); }
             return Results.Ok();
         });
 

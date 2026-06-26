@@ -13,6 +13,7 @@ public class SignalRClientService
     public event Action<string>? OnJoinApproved;
     public event Action<string>? OnJoinRejected;
     public event Action? OnHostDisconnected;
+    public event Action<FlowDesk.Core.Models.TaskComment>? OnReceiveTaskComment;
 
     public async Task ConnectAsync(string serverUrl)
     {
@@ -57,6 +58,11 @@ public class SignalRClientService
         _hubConnection.On("JoinRejected", () =>
         {
             OnJoinRejected?.Invoke("Rejected");
+        });
+        
+        _hubConnection.On<FlowDesk.Core.Models.TaskComment>("ReceiveTaskComment", (comment) =>
+        {
+            OnReceiveTaskComment?.Invoke(comment);
         });
 
         OnConnectionStateChanged?.Invoke("Connecting");

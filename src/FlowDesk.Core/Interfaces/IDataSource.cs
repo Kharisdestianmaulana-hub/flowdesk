@@ -21,6 +21,11 @@ public interface IDataSource
     Task UpdateTaskAsync(TaskItem task);
     Task DeleteTaskAsync(Guid id);
 
+    // Comments
+    Task<List<TaskComment>> GetTaskCommentsAsync(Guid taskId);
+    Task<TaskComment> CreateCommentAsync(TaskComment comment);
+    Task DeleteCommentAsync(Guid id);
+
     // Tags
     Task<List<Tag>> GetTagsAsync();
     Task<Tag?> GetTagAsync(Guid id);

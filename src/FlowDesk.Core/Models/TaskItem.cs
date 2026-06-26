@@ -17,4 +17,5 @@ public class TaskItem
     public Guid? AssigneeId { get; set; }
     
     public System.Collections.Generic.ICollection<TaskTag> TaskTags { get; set; } = new System.Collections.Generic.List<TaskTag>();
+    public System.Collections.Generic.ICollection<TaskComment> Comments { get; set; } = new System.Collections.Generic.List<TaskComment>();
 }

@@ -2,14 +2,16 @@
 
 FlowDesk is a clean, native desktop productivity application built with Avalonia UI. It is designed to be a personal, local-first workspace to manage your projects, tasks, documents, and files seamlessly without requiring an internet connection.
 
-## Current Version: v1.5.0 (Local Workspace & LAN Collaboration)
-FlowDesk is currently in its v1.5.0 stage, introducing robust local networking and team collaboration.
+## Current Version: v1.6.0 (Tasks Polish & Collaboration)
+FlowDesk is currently in its v1.6.0 stage, introducing Task Comments, Profile Flyouts, and advanced UI filtering.
 
 ### Features
 - **Private & Local Workspaces**: Work solo in a Private Workspace or open your workspace to your local network (LAN).
 - **Network Auto-Discovery**: Automatically discover active Local Workspaces on your Wi-Fi or LAN via UDP Broadcast without needing to share IP addresses.
 - **Real-Time Collaboration**: Changes to projects, tasks, and documents sync instantly to all connected team members via SignalR.
 - **Projects & Tasks**: Organize your work into distinct projects, track status, priority, and link tasks.
+- **Task Comments (Real-time)**: Discuss tasks with your team using the built-in real-time chat UI, synced instantly across the LAN.
+- **Assignee Flyout**: Assign team members to tasks quickly using the clean profile flyout interface.
 - **Docs**: A clean document editor to take notes and draft ideas.
 - **Files**: Securely import and organize reference files locally within your workspace.
 - **Member Management**: Accept or reject join requests directly from the app. Monitor who is online.
@@ -45,12 +47,13 @@ dotnet publish -c Release -r osx-x64 --self-contained
 Your data is entirely private and belongs to you. We do not collect analytics, telemetry, or upload your data to any cloud servers.
 
 ## Known Limitations
-- The current v1.5.0 version supports Private and Local Workspaces over LAN. 
-- Server Workspace (Cloud Sync), Advanced Permissions, Comments/Mentions are planned future features and are not available in this release.
+- The current v1.6.0 version supports Private and Local Workspaces over LAN with real-time task comments. 
+- Server Workspace (Cloud Sync) and Advanced Permissions are planned future features and are not available in this release.
 
 ## Roadmap Summary
 - **v1.0**: First public-ready release (Private Workspace)
-- **v1.5**: Full Local Workspace Polish (Current Stage)
+- **v1.5**: Full Local Workspace Polish
+- **v1.6**: Tasks Polish & Collaboration (Current Stage)
 - **v2.0**: Server Workspace (Self-hosted ASP.NET Core backend)
 
 ---
@@ -62,14 +65,16 @@ Your data is entirely private and belongs to you. We do not collect analytics, t
 
 FlowDesk adalah aplikasi produktivitas desktop asli (*native*) yang rapi dan bersih, dibangun menggunakan Avalonia UI. Aplikasi ini dirancang sebagai ruang kerja pribadi yang mengutamakan kelokalan (*local-first*) untuk mengelola proyek, tugas, dokumen, dan file Anda dengan mulus tanpa memerlukan koneksi internet.
 
-## Versi Saat Ini: v1.5.0 (Local Workspace & Kolaborasi LAN)
-FlowDesk saat ini berada pada tahap v1.5.0, memperkenalkan fitur jaringan lokal dan kolaborasi tim yang solid.
+## Versi Saat Ini: v1.6.0 (Tasks Polish & Kolaborasi)
+FlowDesk saat ini berada pada tahap v1.6.0, memperkenalkan fitur Komentar Tugas (Task Comments), Profile Flyout, dan pemfilteran UI tingkat lanjut.
 
 ### Fitur
 - **Private & Local Workspaces**: Bekerja sendirian di ruang kerja pribadi (Private) atau buka ruang kerja Anda untuk jaringan lokal (LAN).
 - **Network Auto-Discovery**: Secara otomatis menemukan ruang kerja lokal (Local Workspaces) yang aktif di Wi-Fi atau LAN Anda menggunakan *UDP Broadcast* tanpa perlu membagikan alamat IP secara manual.
 - **Kolaborasi Real-Time**: Perubahan pada proyek, tugas, dan dokumen disinkronkan secara instan ke semua anggota tim yang terhubung melalui SignalR.
 - **Proyek & Tugas**: Atur pekerjaan Anda ke dalam proyek yang berbeda, lacak status, prioritas, dan tautkan tugas.
+- **Komentar Tugas (Real-time)**: Diskusikan tugas dengan tim Anda menggunakan UI obrolan waktu nyata bawaan, disinkronkan secara instan melalui LAN.
+- **Assignee Flyout**: Tetapkan anggota tim ke tugas dengan cepat menggunakan antarmuka *profile flyout* yang bersih.
 - **Dokumen (Docs)**: Editor dokumen sederhana untuk mencatat dan menyusun draf ide.
 - **File**: Impor dan atur file referensi dengan aman di dalam ruang kerja Anda secara lokal.
 - **Manajemen Anggota**: Terima atau tolak permintaan bergabung langsung dari dalam aplikasi. Pantau siapa saja yang sedang *online*.
@@ -105,12 +110,13 @@ dotnet publish -c Release -r osx-x64 --self-contained
 Data Anda sepenuhnya bersifat pribadi dan milik Anda seutuhnya. Kami tidak mengumpulkan analitik, telemetri, atau mengunggah data Anda ke server *cloud* mana pun.
 
 ## Batasan Saat Ini
-- Versi v1.5.0 saat ini hanya mendukung *Private Workspace* dan *Local Workspace* melalui LAN. 
-- *Server Workspace* (Sinkronisasi *Cloud*), Izin Akses Tingkat Lanjut (*Advanced Permissions*), dan fitur Komentar/Sebutan (*Mentions*) adalah fitur yang direncanakan di masa depan dan belum tersedia pada rilis ini.
+- Versi v1.6.0 saat ini mendukung *Private Workspace* dan *Local Workspace* melalui LAN dengan komentar tugas *real-time*. 
+- *Server Workspace* (Sinkronisasi *Cloud*) dan Izin Akses Tingkat Lanjut (*Advanced Permissions*) adalah fitur yang direncanakan di masa depan dan belum tersedia pada rilis ini.
 
 ## Ringkasan Peta Jalan (Roadmap)
 - **v1.0**: Rilis perdana untuk publik (Private Workspace)
-- **v1.5**: Penyempurnaan penuh *Local Workspace* (Tahap Saat Ini)
+- **v1.5**: Penyempurnaan penuh *Local Workspace*
+- **v1.6**: Penyempurnaan Tugas & Kolaborasi (Tahap Saat Ini)
 - **v2.0**: *Server Workspace* (Backend ASP.NET Core yang di-*host* sendiri)
 
 ---

@@ -110,6 +110,21 @@ public partial class MainViewModel : ViewModelBase
             });
         };
 
+        if (signalRService != null)
+        {
+            signalRService.OnReceiveTaskComment += comment =>
+            {
+                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
+                    new FlowDesk.Desktop.Messages.TaskCommentReceivedMessage(comment));
+            };
+        }
+
+        FlowDesk.Infrastructure.Hosting.LocalServerHost.OnLocalApiTaskCommentCreated += comment =>
+        {
+            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
+                new FlowDesk.Desktop.Messages.TaskCommentReceivedMessage(comment));
+        };
+
         FlowDesk.Infrastructure.Hosting.WorkspaceHub.OnMemberDisconnected += userName =>
         {
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>

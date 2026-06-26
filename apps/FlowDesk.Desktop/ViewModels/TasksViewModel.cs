@@ -6,6 +6,7 @@ using FlowDesk.Core.Models;
 using FlowDesk.Infrastructure.Services;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FlowDesk.Desktop.ViewModels;
 
@@ -26,6 +27,12 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
     private string _searchQuery = string.Empty;
 
     [ObservableProperty]
+    private FlowDesk.Core.Enums.TaskStatus? _filterStatus;
+
+    [ObservableProperty]
+    private TaskPriority? _filterPriority;
+
+    [ObservableProperty]
     private string _sortBy = "Title";
 
     [ObservableProperty]
@@ -42,10 +49,25 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
     [ObservableProperty] private System.DateTime? _addDueDate;
 
     public ObservableCollection<TaskPriority> Priorities { get; } = new(System.Enum.GetValues<TaskPriority>());
+    public ObservableCollection<FlowDesk.Core.Enums.TaskStatus> Statuses { get; } = new(System.Enum.GetValues<FlowDesk.Core.Enums.TaskStatus>());
+
+    [ObservableProperty]
+    private ObservableCollection<LocalUser> _workspaceMembers = new();
 
     public TasksViewModel()
     {
         _ = LoadTasksAsync();
+
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<FlowDesk.Desktop.Messages.TaskCommentReceivedMessage>(this, (r, m) =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (SelectedTask != null && m.Comment.TaskId == SelectedTask.Id)
+                {
+                    CurrentTaskComments.Add(m.Comment);
+                }
+            });
+        });
     }
 
     private async System.Threading.Tasks.Task LoadTasksAsync()
@@ -56,29 +78,40 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
         var dbProjects = await _dataSource.GetProjectsAsync();
         Projects = new ObservableCollection<Project>(dbProjects);
 
+        var members = await _dataSource.GetMembersAsync();
+        WorkspaceMembers = new ObservableCollection<LocalUser>(members);
+
         ApplyFilter();
     }
 
-    partial void OnSearchQueryChanged(string value)
-    {
-        ApplyFilter();
-    }
+    partial void OnSearchQueryChanged(string value) => ApplyFilter();
+    partial void OnFilterStatusChanged(FlowDesk.Core.Enums.TaskStatus? value) => ApplyFilter();
+    partial void OnFilterPriorityChanged(TaskPriority? value) => ApplyFilter();
 
     private void ApplyFilter()
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            FilteredTasks = new ObservableCollection<TaskItem>(Tasks);
-        }
-        else
+        var filtered = Tasks.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
             var query = SearchQuery.ToLowerInvariant();
-            var filtered = Tasks.Where(t => 
+            filtered = filtered.Where(t => 
                 t.Title.ToLowerInvariant().Contains(query) || 
                 (t.Description != null && t.Description.ToLowerInvariant().Contains(query))
             );
-            FilteredTasks = new ObservableCollection<TaskItem>(filtered);
         }
+
+        if (FilterStatus.HasValue)
+        {
+            filtered = filtered.Where(t => t.Status == FilterStatus.Value);
+        }
+
+        if (FilterPriority.HasValue)
+        {
+            filtered = filtered.Where(t => t.Priority == FilterPriority.Value);
+        }
+
+        FilteredTasks = new ObservableCollection<TaskItem>(filtered);
 
         // Apply Sorting
         var sorted = SortBy switch
@@ -195,10 +228,66 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
     [ObservableProperty] private FlowDesk.Core.Enums.TaskStatus _editStatus;
     [ObservableProperty] private TaskPriority _editPriority;
     [ObservableProperty] private System.Guid? _editProjectId;
+    [ObservableProperty] private System.Guid? _editAssigneeId;
+    [ObservableProperty] private LocalUser? _selectedAssignee;
     [ObservableProperty] private System.DateTime? _editDueDate;
+    
+    [ObservableProperty]
+    private ObservableCollection<TaskComment> _currentTaskComments = new();
+
+    [ObservableProperty]
+    private string _newCommentText = string.Empty;
 
     [RelayCommand]
-    private void OpenTaskDetail(TaskItem task)
+    private async System.Threading.Tasks.Task AddCommentAsync()
+    {
+        if (string.IsNullOrWhiteSpace(NewCommentText) || SelectedTask == null) return;
+        
+        var workspaceService = new FlowDesk.Infrastructure.Services.WorkspaceService();
+        var user = workspaceService.GetCurrentUser();
+        var authorName = user?.Name ?? "Unknown";
+        var authorInitial = authorName.Length > 0 ? authorName.Substring(0, 1).ToUpper() : "?";
+
+        var comment = new TaskComment
+        {
+            TaskId = SelectedTask.Id,
+            AuthorName = authorName,
+            AuthorInitial = authorInitial,
+            Content = NewCommentText
+        };
+
+        await _dataSource.CreateCommentAsync(comment);
+        
+        // Let the Messenger handle the UI update if it was an API post, 
+        // but here we are creating locally, so it updates local DB.
+        // Wait, if we use API, we should POST to API if we are a client!
+        // To abstract this, we can just call _dataSource.CreateCommentAsync, 
+        // and if it's RemoteHttpDataSource, it POSTs. If it's Local, it saves to DB.
+        // But Local won't broadcast to other clients if we don't do it manually here,
+        // because LocalDataSource doesn't know about HubContext!
+        // The proper way is to POST to the API even if local, or handle Hub here.
+        var workspace = workspaceService.GetCurrentWorkspace();
+        if (workspace != null && workspace.Mode != FlowDesk.Core.Enums.WorkspaceMode.Joined)
+        {
+            // Host mode: Broadcast directly
+            var hub = FlowDesk.Infrastructure.Hosting.LocalServerHost.HubContext;
+            if (hub != null)
+            {
+                await hub.Clients.All.SendAsync("ReceiveTaskComment", comment);
+            }
+            CurrentTaskComments.Add(comment);
+        }
+        else
+        {
+            // Joined mode: RemoteHttpDataSource already returns the created comment, but we don't broadcast, server does.
+            CurrentTaskComments.Add(comment);
+        }
+
+        NewCommentText = string.Empty;
+    }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task OpenTaskDetail(TaskItem task)
     {
         SelectedTask = task;
         EditTitle = task.Title;
@@ -206,11 +295,22 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
         EditStatus = task.Status;
         EditPriority = task.Priority;
         EditProjectId = task.ProjectId;
+        EditAssigneeId = task.AssigneeId;
+        SelectedAssignee = WorkspaceMembers.FirstOrDefault(m => m.Id == task.AssigneeId);
         EditDueDate = task.DueDate;
         
         EditTagsString = string.Join(", ", task.TaskTags?.Select(tt => tt.Tag?.Name) ?? System.Array.Empty<string>());
         
+        var comments = await _dataSource.GetTaskCommentsAsync(task.Id);
+        CurrentTaskComments = new ObservableCollection<TaskComment>(comments);
+        NewCommentText = string.Empty;
+
         IsDetailOpen = true;
+    }
+
+    partial void OnSelectedAssigneeChanged(LocalUser? value)
+    {
+        EditAssigneeId = value?.Id;
     }
 
     [RelayCommand]
@@ -231,6 +331,7 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
         SelectedTask.Priority = EditPriority;
         SelectedTask.DueDate = EditDueDate;
         SelectedTask.ProjectId = EditProjectId;
+        SelectedTask.AssigneeId = EditAssigneeId;
         SelectedTask.UpdatedAt = System.DateTime.UtcNow;
 
         await _dataSource.UpdateTaskAsync(SelectedTask);

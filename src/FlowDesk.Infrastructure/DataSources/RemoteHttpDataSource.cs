@@ -73,6 +73,23 @@ public class RemoteHttpDataSource : IDataSource
         response.EnsureSuccessStatusCode();
     }
 
+    // Comments
+    public async Task<List<TaskComment>> GetTaskCommentsAsync(Guid taskId) => 
+        await _httpClient.GetFromJsonAsync<List<TaskComment>>($"/api/tasks/{taskId}/comments") ?? new List<TaskComment>();
+
+    public async Task<TaskComment> CreateCommentAsync(TaskComment comment)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"/api/tasks/{comment.TaskId}/comments", comment);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<TaskComment>() ?? comment;
+    }
+
+    public async Task DeleteCommentAsync(Guid id)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/comments/{id}");
+        response.EnsureSuccessStatusCode();
+    }
+
     // Tags
     public async Task<List<Tag>> GetTagsAsync() => 
         await _httpClient.GetFromJsonAsync<List<Tag>>("/api/tags") ?? new List<Tag>();

@@ -147,6 +147,35 @@ public class LocalSqliteDataSource : IDataSource
         }
     }
 
+    // Comments
+    public async Task<List<TaskComment>> GetTaskCommentsAsync(Guid taskId)
+    {
+        using var db = new FlowDeskDbContext();
+        return await db.TaskComments
+            .Where(c => c.TaskId == taskId)
+            .OrderBy(c => c.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<TaskComment> CreateCommentAsync(TaskComment comment)
+    {
+        using var db = new FlowDeskDbContext();
+        db.TaskComments.Add(comment);
+        await db.SaveChangesAsync();
+        return comment;
+    }
+
+    public async Task DeleteCommentAsync(Guid id)
+    {
+        using var db = new FlowDeskDbContext();
+        var comment = await db.TaskComments.FindAsync(id);
+        if (comment != null)
+        {
+            db.TaskComments.Remove(comment);
+            await db.SaveChangesAsync();
+        }
+    }
+
     // Tags
     public async Task<List<Tag>> GetTagsAsync()
     {
