@@ -97,6 +97,16 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8">
+                            <TextBlock Text="Status" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding EditStatus}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Priority" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <ComboBox ItemsSource="{Binding Priorities}" SelectedItem="{Binding EditPriority}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
                             <TextBlock Text="Assignee" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
                             <Button Background="Transparent" BorderThickness="1" BorderBrush="{DynamicResource BorderSoftBrush}" CornerRadius="16" Padding="4" HorizontalAlignment="Left">
                                 <Button.Flyout>
@@ -211,6 +221,11 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Status" FontWeight="{StaticResource FontWeightMedium}" FontSize="{StaticResource FontSizeCaption}"/>
+                            <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding AddStatus}" HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                         <StackPanel Spacing="8">

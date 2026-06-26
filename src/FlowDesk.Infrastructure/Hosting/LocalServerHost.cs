@@ -18,7 +18,9 @@ public class LocalServerHost
     private CancellationTokenSource? _cts;
 
     public bool IsRunning => _app != null;
+    public static event Action<string>? OnMemberDisconnected;
     public static event Action<FlowDesk.Core.Models.TaskComment>? OnLocalApiTaskCommentCreated;
+    public static event Action<FlowDesk.Core.Models.TaskItem>? OnLocalApiTaskUpdated;
 
     public async Task StartAsync(bool allowLanAccess)
     {
@@ -186,12 +188,26 @@ public class LocalServerHost
             using var db = new FlowDeskDbContext();
             db.Tasks.Add(task);
             await db.SaveChangesAsync();
+
+            if (HubContext != null)
+            {
+                await HubContext.Clients.All.SendAsync("ReceiveTaskUpdate", task);
+            }
+            OnLocalApiTaskUpdated?.Invoke(task);
+
             return Results.Ok(task);
         });
         app.MapPut("/api/tasks/{id}", async (Guid id, FlowDesk.Core.Models.TaskItem task) => {
             using var db = new FlowDeskDbContext();
             db.Tasks.Update(task);
             await db.SaveChangesAsync();
+
+            if (HubContext != null)
+            {
+                await HubContext.Clients.All.SendAsync("ReceiveTaskUpdate", task);
+            }
+            OnLocalApiTaskUpdated?.Invoke(task);
+
             return Results.Ok();
         });
         app.MapDelete("/api/tasks/{id}", async (Guid id) => {

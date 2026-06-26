@@ -43,6 +43,7 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
     [ObservableProperty] private bool _isAddOpen;
     [ObservableProperty] private string _addTitle = string.Empty;
     [ObservableProperty] private System.Guid? _addProjectId;
+    [ObservableProperty] private FlowDesk.Core.Enums.TaskStatus _addStatus = FlowDesk.Core.Enums.TaskStatus.ToDo;
     [ObservableProperty] private TaskPriority _addPriority = TaskPriority.Medium;
     [ObservableProperty] private string _addDescription = string.Empty;
     [ObservableProperty] private string _addTagsString = string.Empty;
@@ -65,6 +66,29 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
                 if (SelectedTask != null && m.Comment.TaskId == SelectedTask.Id)
                 {
                     CurrentTaskComments.Add(m.Comment);
+                }
+            });
+        });
+
+        CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Register<FlowDesk.Desktop.Messages.TaskUpdatedMessage>(this, (r, m) =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var existingTask = Tasks.FirstOrDefault(t => t.Id == m.Task.Id);
+                if (existingTask != null)
+                {
+                    var index = Tasks.IndexOf(existingTask);
+                    Tasks[index] = m.Task;
+                }
+                else
+                {
+                    Tasks.Add(m.Task);
+                }
+                ApplyFilter();
+                
+                if (SelectedTask != null && SelectedTask.Id == m.Task.Id)
+                {
+                    SelectedTask = m.Task; // Force refresh selected task if needed
                 }
             });
         });
@@ -147,6 +171,7 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
     {
         AddTitle = string.Empty;
         AddProjectId = null;
+        AddStatus = FlowDesk.Core.Enums.TaskStatus.ToDo;
         AddPriority = TaskPriority.Medium;
         AddDescription = string.Empty;
         AddTagsString = string.Empty;
@@ -169,7 +194,7 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
         {
             Title = AddTitle,
             ProjectId = AddProjectId,
-            Status = FlowDesk.Core.Enums.TaskStatus.ToDo,
+            Status = AddStatus,
             Priority = AddPriority,
             DueDate = AddDueDate,
             Description = AddDescription,
@@ -187,6 +212,17 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
         // Reload task to get tags locally
         var updatedTask = await _dataSource.GetTaskAsync(task.Id);
         if (updatedTask != null) task = updatedTask;
+
+        var workspaceService = new FlowDesk.Infrastructure.Services.WorkspaceService();
+        var workspace = workspaceService.GetCurrentWorkspace();
+        if (workspace != null && workspace.Mode != FlowDesk.Core.Enums.WorkspaceMode.Joined)
+        {
+            var hub = FlowDesk.Infrastructure.Hosting.LocalServerHost.HubContext;
+            if (hub != null)
+            {
+                await hub.Clients.All.SendAsync("ReceiveTaskUpdate", task);
+            }
+        }
 
         Tasks.Insert(0, task);
         IsAddOpen = false;
@@ -207,6 +243,17 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
         task.UpdatedAt = System.DateTime.UtcNow;
         
         await _dataSource.UpdateTaskAsync(task);
+
+        var workspaceService = new FlowDesk.Infrastructure.Services.WorkspaceService();
+        var workspace = workspaceService.GetCurrentWorkspace();
+        if (workspace != null && workspace.Mode != FlowDesk.Core.Enums.WorkspaceMode.Joined)
+        {
+            var hub = FlowDesk.Infrastructure.Hosting.LocalServerHost.HubContext;
+            if (hub != null)
+            {
+                await hub.Clients.All.SendAsync("ReceiveTaskUpdate", task);
+            }
+        }
         
         var index = Tasks.IndexOf(task);
         if (index >= 0)
@@ -341,6 +388,17 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
 
         if (updatedTask != null)
         {
+            var workspaceService = new FlowDesk.Infrastructure.Services.WorkspaceService();
+            var workspace = workspaceService.GetCurrentWorkspace();
+            if (workspace != null && workspace.Mode != FlowDesk.Core.Enums.WorkspaceMode.Joined)
+            {
+                var hub = FlowDesk.Infrastructure.Hosting.LocalServerHost.HubContext;
+                if (hub != null)
+                {
+                    await hub.Clients.All.SendAsync("ReceiveTaskUpdate", updatedTask);
+                }
+            }
+
             var index = Tasks.IndexOf(SelectedTask);
             if (index >= 0)
             {
