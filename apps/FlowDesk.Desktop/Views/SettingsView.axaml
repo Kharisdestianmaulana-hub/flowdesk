@@ -29,6 +29,11 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8">
+                            <TextBlock Text="Accent Color" FontWeight="{StaticResource FontWeightMedium}"/>
+                            <ComboBox ItemsSource="{Binding AvailableAccentColors}" SelectedItem="{Binding SelectedAccentColor}" Width="300" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
                             <TextBlock Text="App Zoom" FontWeight="{StaticResource FontWeightMedium}"/>
                             <StackPanel Orientation="Horizontal" Spacing="16">
                                 <ComboBox ItemsSource="{Binding AvailableZoomOptions}" SelectedItem="{Binding SelectedZoomOption}" Width="150" HorizontalAlignment="Left"/>

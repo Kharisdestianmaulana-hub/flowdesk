@@ -9,6 +9,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 
 namespace FlowDesk.Desktop.ViewModels;
 
@@ -42,6 +43,10 @@ public partial class FilesViewModel : ViewModelBase, IPageCommands
 
     [ObservableProperty]
     private FileItem? _selectedFileForDelete;
+
+    [ObservableProperty] private bool _isPreviewOpen;
+    [ObservableProperty] private string _previewFileName = string.Empty;
+    [ObservableProperty] private Bitmap? _previewImage;
 
     public bool IsEmpty => FilteredFiles.Count == 0;
 
@@ -154,6 +159,34 @@ public partial class FilesViewModel : ViewModelBase, IPageCommands
         }
     }
 
+    public async Task ImportFilesAsync(System.Collections.Generic.IEnumerable<string> paths)
+    {
+        IsLoading = true;
+        LoadingMessage = "Importing files...";
+        try
+        {
+            foreach(var path in paths)
+            {
+                var imported = await _dataSource.UploadFileAsync(path, null);
+                if (imported != null)
+                {
+                    Files.Insert(0, imported);
+                }
+            }
+            ApplyFilter();
+            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new FlowDesk.Desktop.Messages.ToastNotificationMessage("Files imported successfully."));
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Could not import files: {ex.Message}";
+            IsErrorOpen = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
     [ObservableProperty] private bool _isErrorOpen;
     [ObservableProperty] private string _errorMessage = string.Empty;
 
@@ -173,6 +206,55 @@ public partial class FilesViewModel : ViewModelBase, IPageCommands
                 IsErrorOpen = true;
             }
         }
+    }
+
+    [RelayCommand]
+    private void PreviewFile(FileItem fileItem)
+    {
+        if (fileItem != null && !string.IsNullOrEmpty(fileItem.StoredPath) && System.IO.File.Exists(fileItem.StoredPath))
+        {
+            var ext = fileItem.Extension?.ToLowerInvariant();
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp" || ext == ".bmp")
+            {
+                try
+                {
+                    PreviewImage = new Bitmap(fileItem.StoredPath);
+                    PreviewFileName = fileItem.Name;
+                    IsPreviewOpen = true;
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage = $"Could not preview image: {ex.Message}";
+                    IsErrorOpen = true;
+                }
+            }
+            else
+            {
+                // Open in default OS app
+                try
+                {
+                    Process.Start(new ProcessStartInfo { FileName = fileItem.StoredPath, UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage = $"Could not open file: {ex.Message}";
+                    IsErrorOpen = true;
+                }
+            }
+        }
+        else
+        {
+            ErrorMessage = "The stored file could not be found locally.";
+            IsErrorOpen = true;
+        }
+    }
+
+    [RelayCommand]
+    private void ClosePreview()
+    {
+        IsPreviewOpen = false;
+        PreviewImage?.Dispose();
+        PreviewImage = null;
     }
 
     [RelayCommand]

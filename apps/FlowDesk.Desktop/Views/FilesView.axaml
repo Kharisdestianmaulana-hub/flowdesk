@@ -3,9 +3,18 @@
              xmlns:vm="using:FlowDesk.Desktop.ViewModels"
              x:Class="FlowDesk.Desktop.Views.FilesView"
              x:DataType="vm:FilesViewModel"
-             x:Name="Root">
+             x:Name="Root"
+             DragDrop.AllowDrop="True">
 
     <Grid>
+        <!-- Overlay for Drag & Drop Drop Zone indicator -->
+        <Border x:Name="DropZoneOverlay" Background="#99000000" IsVisible="False" ZIndex="100">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <PathIcon Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" Width="64" Height="64" Foreground="White"/>
+                <TextBlock Text="Drop files to upload" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
+            </StackPanel>
+        </Border>
+
         <StackPanel Margin="{StaticResource Spacing8}" Spacing="24">
             <Grid ColumnDefinitions="*, Auto, Auto">
                 <TextBlock Grid.Column="0" Text="Files" FontSize="{StaticResource FontSizePageTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center"/>
@@ -31,7 +40,8 @@
                         <Border Classes="TableRow" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="8,12">
                             <Border.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Open File" Command="{Binding #Root.((vm:FilesViewModel)DataContext).OpenEditCommand}" CommandParameter="{Binding}" />
+                                    <MenuItem Header="Preview / Open File" Command="{Binding #Root.((vm:FilesViewModel)DataContext).PreviewFileCommand}" CommandParameter="{Binding}" />
+                                    <MenuItem Header="Edit Properties" Command="{Binding #Root.((vm:FilesViewModel)DataContext).OpenEditCommand}" CommandParameter="{Binding}" />
                                     <MenuItem Header="Reveal in Folder" Command="{Binding #Root.((vm:FilesViewModel)DataContext).RevealInFolderCommand}" CommandParameter="{Binding}" />
                                     <MenuItem Header="-" />
                                     <MenuItem Header="Delete Record..." Command="{Binding #Root.((vm:FilesViewModel)DataContext).ConfirmDeleteCommand}" CommandParameter="{Binding}" Foreground="Red" />
@@ -43,8 +53,8 @@
                                 <TextBlock Grid.Column="2" Text="{Binding SizeBytes}" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="3" Text="{Binding CreatedAt, StringFormat='MMM dd, yyyy'}" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                    <Button Content="Preview" Command="{Binding $parent[ItemsControl].((vm:FilesViewModel)DataContext).PreviewFileCommand}" CommandParameter="{Binding}" Classes="Primary" Padding="8,4" FontSize="{StaticResource FontSizeCaption}"/>
                                     <Button Content="Edit" Command="{Binding $parent[ItemsControl].((vm:FilesViewModel)DataContext).OpenEditCommand}" CommandParameter="{Binding}" Classes="Secondary" Padding="8,4" FontSize="{StaticResource FontSizeCaption}"/>
-                                    <Button Content="Reveal" Command="{Binding $parent[ItemsControl].((vm:FilesViewModel)DataContext).RevealInFolderCommand}" CommandParameter="{Binding}" Classes="Secondary" Padding="8,4" FontSize="{StaticResource FontSizeCaption}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -130,6 +140,23 @@
                     
                     <Button Content="Close" Command="{Binding CloseErrorCommand}" Classes="Secondary" HorizontalAlignment="Right"/>
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Image Preview Modal -->
+        <Grid Classes="ModalOverlay" Background="#B2000000" IsVisible="{Binding IsPreviewOpen}" ZIndex="300">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Spacing6}" MaxWidth="800" MaxHeight="600" HorizontalAlignment="Center" VerticalAlignment="Center" BoxShadow="0 8 32 0 #33000000">
+                <Grid RowDefinitions="Auto, *">
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,16">
+                        <TextBlock Grid.Column="0" Text="{Binding PreviewFileName}" FontSize="{StaticResource FontSizeTitle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource InkBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Button Grid.Column="1" Content="Close" Command="{Binding ClosePreviewCommand}" Classes="Secondary" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </Grid>
+                    
+                    <Border Grid.Row="1" Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="{StaticResource RadiusSm}" ClipToBounds="True">
+                        <!-- We use an Image control bound to a Bitmap -->
+                        <Image Source="{Binding PreviewImage}" Stretch="Uniform" />
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

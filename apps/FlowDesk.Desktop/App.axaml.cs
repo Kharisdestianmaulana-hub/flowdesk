@@ -52,6 +52,7 @@ public partial class App : Avalonia.Application
                 "Dark" => Avalonia.Styling.ThemeVariant.Dark,
                 _ => Avalonia.Styling.ThemeVariant.Default
             };
+            ApplyAccentColor(settings.AccentColor);
 
             desktop.MainWindow = new MainWindow
             {
@@ -60,5 +61,27 @@ public partial class App : Avalonia.Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    public static void ApplyAccentColor(string colorName)
+    {
+        var color = colorName switch
+        {
+            "Purple" => Avalonia.Media.Color.Parse("#7C3AED"),
+            "Blue" => Avalonia.Media.Color.Parse("#3B82F6"),
+            "Green" => Avalonia.Media.Color.Parse("#10B981"),
+            "Rose" => Avalonia.Media.Color.Parse("#F43F5E"),
+            "Orange" => Avalonia.Media.Color.Parse("#F97316"),
+            _ => Avalonia.Media.Color.Parse("#7C3AED")
+        };
+
+        if (Avalonia.Application.Current != null)
+        {
+            Avalonia.Application.Current.Resources["ColorPrimary"] = color;
+            Avalonia.Application.Current.Resources["PrimaryBrush"] = new Avalonia.Media.SolidColorBrush(color);
+            // Optional subtles
+            Avalonia.Application.Current.Resources["ColorFocus"] = color;
+            Avalonia.Application.Current.Resources["FocusBrush"] = new Avalonia.Media.SolidColorBrush(color);
+        }
     }
 }

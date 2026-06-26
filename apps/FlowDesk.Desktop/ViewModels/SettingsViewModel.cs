@@ -85,6 +85,24 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _selectedTheme = "System";
 
+    public System.Collections.ObjectModel.ObservableCollection<string> AvailableAccentColors { get; } = new() { "Purple", "Blue", "Green", "Rose", "Orange" };
+
+    private string _selectedAccentColor = "Purple";
+    public string SelectedAccentColor
+    {
+        get => _selectedAccentColor;
+        set
+        {
+            if (SetProperty(ref _selectedAccentColor, value))
+            {
+                var settings = _settingsService.LoadSettings();
+                settings.AccentColor = value;
+                _settingsService.SaveSettings(settings);
+                App.ApplyAccentColor(value);
+            }
+        }
+    }
+
     public System.Collections.ObjectModel.ObservableCollection<string> AvailableZoomOptions { get; } = new() { "50%", "75%", "100%", "125%", "150%", "200%", "Custom" };
 
     private string _selectedZoomOption = "100%";
@@ -172,6 +190,8 @@ public partial class SettingsViewModel : ViewModelBase
 
         var settings = _settingsService.LoadSettings();
         SelectedTheme = settings.ThemePreference;
+        _selectedAccentColor = settings.AccentColor;
+        OnPropertyChanged(nameof(SelectedAccentColor));
 
         var zl = Math.Round(_mainViewModel.MainWindowViewModel.AppZoomLevel * 100);
         string mapped = zl switch {

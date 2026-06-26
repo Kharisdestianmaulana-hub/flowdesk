@@ -7,6 +7,7 @@ namespace FlowDesk.Infrastructure.Services;
 public class LocalSettings
 {
     public string ThemePreference { get; set; } = "System";
+    public string AccentColor { get; set; } = "Purple";
     public double AppZoomLevel { get; set; } = 1.0;
     public string LastUserName { get; set; } = string.Empty;
 }
