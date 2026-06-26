@@ -75,6 +75,25 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
             {
                 var existingTask = Tasks.FirstOrDefault(t => t.Id == m.Task.Id);
+                
+                // Check if assigned to me
+                var wsService = new FlowDesk.Infrastructure.Services.WorkspaceService();
+                var currentUser = wsService.GetCurrentUser();
+                
+                if (currentUser != null && m.Task.AssigneeId != null)
+                {
+                    var assignee = WorkspaceMembers.FirstOrDefault(x => x.Id == m.Task.AssigneeId);
+                    if (assignee != null && assignee.Name == currentUser.Name)
+                    {
+                        bool assigneeChangedToMe = existingTask == null || existingTask.AssigneeId != m.Task.AssigneeId;
+                        if (assigneeChangedToMe)
+                        {
+                            CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
+                                new FlowDesk.Desktop.Messages.ToastNotificationMessage($"You have been assigned to: {m.Task.Title}"));
+                        }
+                    }
+                }
+
                 if (existingTask != null)
                 {
                     var index = Tasks.IndexOf(existingTask);
@@ -89,6 +108,18 @@ public partial class TasksViewModel : ViewModelBase, IPageCommands
                 if (SelectedTask != null && SelectedTask.Id == m.Task.Id)
                 {
                     SelectedTask = m.Task; // Force refresh selected task if needed
+                    if (IsDetailOpen)
+                    {
+                        // Refresh the UI bindings for editing
+                        EditTitle = m.Task.Title;
+                        EditDescription = m.Task.Description;
+                        EditStatus = m.Task.Status;
+                        EditPriority = m.Task.Priority;
+                        EditProjectId = m.Task.ProjectId;
+                        EditAssigneeId = m.Task.AssigneeId;
+                        SelectedAssignee = WorkspaceMembers.FirstOrDefault(x => x.Id == m.Task.AssigneeId);
+                        EditDueDate = m.Task.DueDate;
+                    }
                 }
             });
         });

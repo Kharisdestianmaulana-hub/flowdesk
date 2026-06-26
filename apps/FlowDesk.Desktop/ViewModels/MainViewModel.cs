@@ -157,16 +157,6 @@ public partial class MainViewModel : ViewModelBase
     {
         CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(
             new FlowDesk.Desktop.Messages.TaskUpdatedMessage(task));
-
-        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            var wsService = new FlowDesk.Infrastructure.Services.WorkspaceService();
-            var currentUser = wsService.GetCurrentUser();
-            if (currentUser != null && task.AssigneeId == currentUser.Id)
-            {
-                ShowToast($"You have been assigned to: {task.Title}");
-            }
-        });
     }
 
     public System.Collections.ObjectModel.ObservableCollection<FlowDesk.Infrastructure.Hosting.JoinRequestMessage> PendingJoinRequests { get; } = new();

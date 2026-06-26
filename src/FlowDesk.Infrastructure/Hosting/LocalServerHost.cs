@@ -159,8 +159,14 @@ public class LocalServerHost
         });
         app.MapPut("/api/projects/{id}", async (Guid id, FlowDesk.Core.Models.Project project) => {
             using var db = new FlowDeskDbContext();
-            db.Projects.Update(project);
-            await db.SaveChangesAsync();
+            var existing = await db.Projects.FindAsync(id);
+            if (existing != null)
+            {
+                existing.Name = project.Name;
+                existing.Description = project.Description;
+                existing.UpdatedAt = DateTime.UtcNow;
+                await db.SaveChangesAsync();
+            }
             return Results.Ok();
         });
         app.MapDelete("/api/projects/{id}", async (Guid id) => {
@@ -199,14 +205,28 @@ public class LocalServerHost
         });
         app.MapPut("/api/tasks/{id}", async (Guid id, FlowDesk.Core.Models.TaskItem task) => {
             using var db = new FlowDeskDbContext();
-            db.Tasks.Update(task);
-            await db.SaveChangesAsync();
-
-            if (HubContext != null)
+            var existing = await db.Tasks.FindAsync(id);
+            if (existing != null)
             {
-                await HubContext.Clients.All.SendAsync("ReceiveTaskUpdate", task);
+                var oldAssignee = existing.AssigneeId;
+                
+                existing.Title = task.Title;
+                existing.Description = task.Description;
+                existing.Status = task.Status;
+                existing.Priority = task.Priority;
+                existing.DueDate = task.DueDate;
+                existing.ProjectId = task.ProjectId;
+                existing.AssigneeId = task.AssigneeId;
+                existing.UpdatedAt = DateTime.UtcNow;
+                
+                await db.SaveChangesAsync();
+
+                if (HubContext != null)
+                {
+                    await HubContext.Clients.All.SendAsync("ReceiveTaskUpdate", existing);
+                }
+                OnLocalApiTaskUpdated?.Invoke(existing);
             }
-            OnLocalApiTaskUpdated?.Invoke(task);
 
             return Results.Ok();
         });
